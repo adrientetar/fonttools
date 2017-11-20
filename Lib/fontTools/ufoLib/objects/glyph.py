@@ -1,5 +1,11 @@
 import attr
 from ._common import Number
+from fontTools.ufoLib.objects.anchor import Anchor
+from fontTools.ufoLib.objects.component import Component
+from fontTools.ufoLib.objects.contour import Contour
+from fontTools.ufoLib.objects.guideline import Guideline
+from fontTools.ufoLib.objects.image import Image
+from fontTools.ufoLib.objects.point import Point
 
 
 # TODO: look at attrs converters
@@ -44,3 +50,13 @@ class Glyph(object):
 
     def appendGuideline(self, guideline):
         self._guidelines.append(guideline)
+
+
+class GlyphClasses(object):
+    Anchor = Anchor
+    Component = Component
+    Contour = Contour
+    Glyph = Glyph
+    Guideline = Guideline
+    Image = Image
+    Point = Point

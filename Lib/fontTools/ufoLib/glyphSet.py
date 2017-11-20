@@ -1,13 +1,4 @@
 import attr
-# TODO: stop polluting here with these imports, make an object
-# that holds all the classes and pass it from the reader
-from fontTools.ufoLib.objects.anchor import Anchor
-from fontTools.ufoLib.objects.component import Component
-from fontTools.ufoLib.objects.contour import Contour
-from fontTools.ufoLib.objects.glyph import Glyph
-from fontTools.ufoLib.objects.guideline import Guideline
-from fontTools.ufoLib.objects.image import Image
-from fontTools.ufoLib.objects.point import Point
 from lxml import etree
 import os
 import plistlib
@@ -35,14 +26,14 @@ class GlyphSet(object):
         self._contents = contents
         # self._reverseContents = None
 
-    def readGlyph(self, name):
+    def readGlyph(self, name, classes):
         fileName = self._contents[name]
         path = os.path.join(self.path, fileName)
         with open(path, "rb") as file:
             tree = etree.parse(file)
         # validate tree?
         # ..
-        return glyphFromTree(tree.getroot())
+        return glyphFromTree(tree.getroot(), classes)
 
     # dict
 
@@ -104,16 +95,12 @@ def _transformation(element):
     return tuple(transformation)
 
 
-def glyphFromTree(root):
-    # XXX: pass custom classes
-    # we could make a GlyphBuilder class instanciated
-    # by the GlyphSet and pass a classes holder
-    # UFOReader -> GlyphSet -> GlyphBuilder
-    glyph = Glyph(root.attrib["name"])
+def glyphFromTree(root, classes):
+    glyph = classes.Glyph(root.attrib["name"])
     unicodes = []
     for element in root:
         if element.tag == "outline":
-            outlineFromTree(element, glyph)
+            outlineFromTree(element, glyph, classes)
         elif element.tag == "advance":
             for key in ("width", "height"):
                 if key in element.attrib:
@@ -121,7 +108,7 @@ def glyphFromTree(root):
         elif element.tag == "unicode":
             unicodes.append(int(element.attrib["hex"], 16))
         elif element.tag == "anchor":
-            anchor = Anchor(
+            anchor = classes.Anchor(
                 x=element.attrib["x"],
                 y=element.attrib["y"],
                 name=element.get("name"),
@@ -130,7 +117,7 @@ def glyphFromTree(root):
             )
             glyph.appendAnchor(anchor)
         elif element.tag == "guideline":
-            guideline = Guideline(
+            guideline = classes.Guideline(
                 x=element.get("x", 0),
                 y=element.get("y", 0),
                 angle=element.get("angle", 0),
@@ -140,7 +127,7 @@ def glyphFromTree(root):
             )
             glyph.appendGuideline(guideline)
         elif element.tag == "image":
-            image = Image(
+            image = classes.Image(
                 fileName=element.attrib["fileName"],
                 transformation=_transformation(element),
             )
@@ -155,16 +142,16 @@ def glyphFromTree(root):
     return glyph
 
 
-def outlineFromTree(outline, glyph):
+def outlineFromTree(outline, glyph, classes):
     for element in outline:
         if element.tag == "contour":
-            contour = Contour()
+            contour = classes.Contour()
             for element_ in element:
                 segmentType = element_.attrib.get("type")
                 # TODO: fallback to None like defcon or "offcurve"?
                 if segmentType == "offcurve":
                     segmentType = None
-                point = Point(
+                point = classes.Point(
                     x=_number(element_.attrib["x"]),
                     y=_number(element_.attrib["y"]),
                     type=segmentType,
@@ -176,7 +163,7 @@ def outlineFromTree(outline, glyph):
                 contour.append(point)
             glyph.appendContour(contour)
         elif element.tag == "component":
-            component = Component(
+            component = classes.Component(
                 baseGlyph=element.attrib["base"],
                 transformation=_transformation(element),
                 identifier=element.get("identifier"),

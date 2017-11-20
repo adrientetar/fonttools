@@ -1,5 +1,5 @@
 import attr
-from fontTools.ufoLib.objects.glyph import Glyph
+from fontTools.ufoLib.objects.glyph import Glyph, GlyphClasses
 from fontTools.ufoLib.reader import GlyphSet
 
 # TODO: layer.color, layer.lib?
@@ -30,7 +30,7 @@ class Layer(object):
         return self._name
 
     def loadGlyph(self, name):
-        glyph = self._glyphSet.readGlyph(name)
+        glyph = self._glyphSet.readGlyph(name, GlyphClasses)
         self._glyphs[name] = glyph
 
     # TODO: this should probably be re-exported in the Font
