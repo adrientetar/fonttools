@@ -3,21 +3,29 @@ from collections import OrderedDict
 from fontTools.ufoLib.objects.layer import Layer
 
 
-@attr.s()
+@attr.s(slots=True)
 class LayerSet(object):
     _layers = attr.ib(init=False, type=OrderedDict)
 
     def __attrs_post_init__(self):
         self._layers = OrderedDict()
-        self.__contains__ = self._layers.__contains__
-        self.__delitem__ = self._layers.__delitem__
-        self.__getitem__ = self._layers.__getitem__
-        self.__len__ = self._layers.__len__
 
-    # TODO: clear, layers getter?
+    # TODO: clear, get(), layers getter?
+
+    def __contains__(self, name):
+        return name in self._layers
+
+    def __delitem__(self, name):
+        del self._layers[name]
+
+    def __getitem__(self, name):
+        return self._layers[name]
 
     def __iter__(self):
         return iter(self._layers.values())
+
+    def __len__(self):
+        return len(self._layers)
 
     @property
     def defaultLayer(self):

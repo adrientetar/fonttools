@@ -6,6 +6,8 @@ from fontTools.ufoLib.objects.guideline import Guideline
 from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layerSet import LayerSet
 
+DEFAULT_LAYER_NAME = "public.default"
+
 
 @attr.s(slots=True)
 class Font(object):
@@ -33,11 +35,14 @@ class Font(object):
             # load data directory list
             # ..
 
+        if not self._layers:
+            self._layers.newLayer(DEFAULT_LAYER_NAME)
+
     def __contains__(self, name):
         return name in self._layers.defaultLayer
 
     def __getitem__(self, name):
-        return self.layers.defaultLayer[name]
+        return self._layers.defaultLayer[name]
 
     def __delitem__(self, name):
         del self._layers.defaultLayer[name]
@@ -47,6 +52,9 @@ class Font(object):
 
     def __len__(self):
         return len(self._layers.defaultLayer)
+
+    def keys(self):
+        return self._layers.defaultLayer.keys()
 
     @property
     def features(self):
@@ -92,3 +100,15 @@ class Font(object):
     @property
     def path(self):
         return self._path
+
+    def addGlyph(self, glyph):
+        self._layers.defaultLayer.addGlyph(glyph)
+
+    def newGlyph(self, name):
+        return self._layers.defaultLayer.newGlyph(name)
+
+    def newLayer(self, name):
+        return self._layers.newLayer(name)
+
+    def save(self, path=None):
+        raise NotImplementedError

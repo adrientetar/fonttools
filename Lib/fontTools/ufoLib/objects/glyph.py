@@ -12,6 +12,8 @@ from fontTools.ufoLib.objects.point import Point
 
 @attr.s(slots=True)
 class Glyph(object):
+    # XXX: same here as with Layer objects: parent maintains a dict
+    # which ought to stay up-to-date
     name = attr.ib(type=str)
     width = attr.ib(init=False, type=Number)
     height = attr.ib(init=False, type=Number)
