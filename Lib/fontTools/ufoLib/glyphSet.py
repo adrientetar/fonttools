@@ -109,8 +109,8 @@ def glyphFromTree(root, classes):
             unicodes.append(int(element.attrib["hex"], 16))
         elif element.tag == "anchor":
             anchor = classes.Anchor(
-                x=element.attrib["x"],
-                y=element.attrib["y"],
+                x=_number(element.attrib["x"]),
+                y=_number(element.attrib["y"]),
                 name=element.get("name"),
                 # color
                 identifier=element.get("identifier"),
@@ -118,9 +118,9 @@ def glyphFromTree(root, classes):
             glyph.appendAnchor(anchor)
         elif element.tag == "guideline":
             guideline = classes.Guideline(
-                x=element.get("x", 0),
-                y=element.get("y", 0),
-                angle=element.get("angle", 0),
+                x=_number(element.get("x", 0)),
+                y=_number(element.get("y", 0)),
+                angle=_number(element.get("angle", 0)),
                 name=element.get("name"),
                 # color
                 identifier=element.get("identifier"),

@@ -35,8 +35,22 @@ class LayerSet(object):
             pass
         return None
 
+    @defaultLayer.setter
+    def defaultLayer(self, layer):
+        hasLayer = False
+        layers = OrderedDict()
+        layers[layer.name] = layer
+        for layer_ in self:
+            if layer_ == layer:
+                hasLayer = True
+                continue
+            layers[layer_.name] = layer_
+        if not hasLayer:
+            raise KeyError("layer \"%s\" is not in the layer set." % layer)
+        self._layers = layers
+
     def layerNames(self):
-        return iter(self._layers)
+        return self._layers.keys()
 
     @property
     def layerOrder(self):

@@ -79,6 +79,9 @@ class Font(object):
             if self._path is not None:
                 reader = UFOReader(self._path)
                 data = reader.readInfo()
+                # TODO: the guidelines should probably be made in the
+                # reader for validation etc.
+                # split into readInfo() and readGuidelines()
                 guidelines = data.pop("guidelines", [])
                 self._info = Info(**data)
                 for i in range(len(guidelines)):
