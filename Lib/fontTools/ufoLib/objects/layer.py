@@ -45,9 +45,15 @@ class Layer(object):
     def __len__(self):
         return len(self._keys)
 
+    def get(self, name, default=None):
+        try:
+            return self[name]
+        except KeyError:
+            pass
+        return default
+
     def keys(self):
-        # TODO: should we return a copy here?
-        return self._keys
+        return set(self._keys)
 
     @property  # rename from the parent? (which maintains a dict)
     def name(self):

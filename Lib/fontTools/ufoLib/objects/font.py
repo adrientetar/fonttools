@@ -41,17 +41,20 @@ class Font(object):
     def __contains__(self, name):
         return name in self._layers.defaultLayer
 
-    def __getitem__(self, name):
-        return self._layers.defaultLayer[name]
-
     def __delitem__(self, name):
         del self._layers.defaultLayer[name]
+
+    def __getitem__(self, name):
+        return self._layers.defaultLayer[name]
 
     def __iter__(self):
         return iter(self._layers.defaultLayer)
 
     def __len__(self):
         return len(self._layers.defaultLayer)
+
+    def get(self, name, default=None):
+        return self._layers.defaultLayer.get(name, default)
 
     def keys(self):
         return self._layers.defaultLayer.keys()

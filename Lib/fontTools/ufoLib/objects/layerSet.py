@@ -10,8 +10,6 @@ class LayerSet(object):
     def __attrs_post_init__(self):
         self._layers = OrderedDict()
 
-    # TODO: clear, get(), layers getter?
-
     def __contains__(self, name):
         return name in self._layers
 
@@ -48,9 +46,6 @@ class LayerSet(object):
         if not hasLayer:
             raise KeyError("layer \"%s\" is not in the layer set." % layer)
         self._layers = layers
-
-    def layerNames(self):
-        return self._layers.keys()
 
     @property
     def layerOrder(self):

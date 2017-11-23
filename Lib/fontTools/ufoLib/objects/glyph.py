@@ -10,10 +10,16 @@ from fontTools.ufoLib.objects.point import Point
 
 # TODO: look at attrs converters
 
+# TODO: clear functions?
+# TODO: getters for anchors, components etc.? (return list(self._anchors))
+# also remove funcs
+
 @attr.s(slots=True)
 class Glyph(object):
     # XXX: same here as with Layer objects: parent maintains a dict
     # which ought to stay up-to-date
+    # Note: also we *may* want to have a method to rename glyph in
+    # all layers, e.g. Font.renameGlyph()
     name = attr.ib(type=str)
     width = attr.ib(init=False, type=Number)
     height = attr.ib(init=False, type=Number)
