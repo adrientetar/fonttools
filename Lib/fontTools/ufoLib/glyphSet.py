@@ -26,6 +26,7 @@ class GlyphSet(object):
         self._contents = contents
         # self._reverseContents = None
 
+    # This could also be __getitem__(), and pass classes in the ctor.
     def readGlyph(self, name, classes):
         fileName = self._contents[name]
         path = os.path.join(self.path, fileName)
@@ -46,6 +47,7 @@ class GlyphSet(object):
     def values(self):
         return self._contents.values()
 
+    """
     def __contains__(self, item):
         pass
 
@@ -63,6 +65,7 @@ class GlyphSet(object):
 
     def __len__(self):
         pass
+    """
 
 
 _transformationInfo = (

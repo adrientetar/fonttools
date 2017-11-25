@@ -85,6 +85,9 @@ class Font(object):
                 # TODO: the guidelines should probably be made in the
                 # reader for validation etc.
                 # split into readInfo() and readGuidelines()
+                #
+                # idea: readGuidelines(self) which calls
+                # appendGuideline() with a dict
                 guidelines = data.pop("guidelines", [])
                 self._info = Info(**data)
                 for i in range(len(guidelines)):

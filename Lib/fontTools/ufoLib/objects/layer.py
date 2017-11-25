@@ -66,6 +66,8 @@ class Layer(object):
         self._keys.add(glyph.name)
 
     def loadGlyph(self, name):
+        if self._glyphSet is None:
+            return
         glyph = self._glyphSet.readGlyph(name, GlyphClasses)
         self._glyphs[name] = glyph
 
