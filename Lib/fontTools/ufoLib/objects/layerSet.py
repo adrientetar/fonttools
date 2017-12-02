@@ -63,4 +63,35 @@ class LayerSet(object):
         if name in self._layers:
             raise KeyError("a layer named \"%s\" already exists." % name)
         self._layers[name] = layer = Layer(name, glyphSet)
+        # TODO: should this be done in Layer ctor?
+        if glyphSet is not None:
+            glyphSet.readLayerInfo(layer)
         return layer
+
+    def renameGlyph(self, name, newName, overwrite=False):
+        # Note: this would be easier if the glyph contained the layers!
+        if name == newName:
+            return
+        # make sure we're copying something
+        if not any(name in layer for layer in self):
+            raise KeyError("no glyph named \"%s\" exists." % name)
+        # prepare destination, delete if overwrite=True or error
+        for layer in self:
+            if newName in self._layers:
+                if overwrite:
+                    del layer[newName]
+                else:
+                    raise KeyError("a glyph named \"%s\" already exists." % newName)
+        # now do the move
+        for layer in self:
+            if name in layer:
+                layer[newName] = glyph = layer.pop(name)
+                glyph._name = newName
+
+    def renameLayer(self, name, newName, overwrite=False):
+        if name == newName:
+            return
+        if not overwrite and newName in self._layers:
+            raise KeyError("a layer named \"%s\" already exists." % newName)
+        self._layers[newName] = layer = self._layers.pop(name)
+        layer._name = newName

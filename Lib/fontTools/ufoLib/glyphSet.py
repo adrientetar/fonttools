@@ -4,6 +4,10 @@ import os
 import plistlib
 
 CONTENTS_FILENAME = "contents.plist"
+LAYERINFO_FILENAME = "layerinfo.plist"
+
+# Note: we can implement reporting with logging, and lxml Elements
+# have a sourceline attr
 
 
 @attr.s(slots=True)
@@ -21,20 +25,27 @@ class GlyphSet(object):
                 contents = plistlib.load(file)
         except FileNotFoundError:
             contents = {}
-        # validate contents
-        # ..
         self._contents = contents
-        # self._reverseContents = None
 
-    # This could also be __getitem__(), and pass classes in the ctor.
     def readGlyph(self, name, classes):
         fileName = self._contents[name]
         path = os.path.join(self.path, fileName)
-        with open(path, "rb") as file:
-            tree = etree.parse(file)
-        # validate tree?
-        # ..
+        try:
+            with open(path, "rb") as file:
+                tree = etree.parse(file)
+        except FileNotFoundError:
+            raise KeyError(name)
         return glyphFromTree(tree.getroot(), classes)
+
+    def readLayerInfo(self, layer):
+        path = os.path.join(self.path, LAYERINFO_FILENAME)
+        try:
+            with open(path, "rb") as file:
+                layerDict = plistlib.load(file)
+        except FileNotFoundError:
+            return
+        for key, value in layerDict.items():
+            setattr(layer, key, value)
 
     # dict
 
@@ -68,17 +79,6 @@ class GlyphSet(object):
     """
 
 
-_transformationInfo = (
-    # field name, default value
-    ("xScale",  1),
-    ("xyScale", 0),
-    ("yxScale", 0),
-    ("yScale",  1),
-    ("xOffset", 0),
-    ("yOffset", 0),
-)
-
-
 def _number(s):
     try:
         return int(s)
@@ -86,16 +86,15 @@ def _number(s):
         return float(s)
 
 
-def _transformation(element):
-    transformation = []
-    for ident, default in _transformationInfo:
-        value = element.get(ident)
-        if value is not None:
-            value = _number(value)
-        else:
-            value = default
-        transformation.append(value)
-    return tuple(transformation)
+def _transformation(element, classes):
+    return classes.Transformation(
+        xScale=_number(element.get("xScale", 1)),
+        xyScale=_number(element.get("xyScale", 0)),
+        yxScale=_number(element.get("yxScale", 0)),
+        yScale=_number(element.get("yScale", 1)),
+        xOffset=_number(element.get("xOffset", 0)),
+        yOffset=_number(element.get("yOffset", 0)),
+    )
 
 
 def glyphFromTree(root, classes):
@@ -115,26 +114,27 @@ def glyphFromTree(root, classes):
                 x=_number(element.attrib["x"]),
                 y=_number(element.attrib["y"]),
                 name=element.get("name"),
-                # color
+                color=element.get("color"),
                 identifier=element.get("identifier"),
             )
-            glyph.appendAnchor(anchor)
+            glyph.anchors.append(anchor)
         elif element.tag == "guideline":
             guideline = classes.Guideline(
                 x=_number(element.get("x", 0)),
                 y=_number(element.get("y", 0)),
                 angle=_number(element.get("angle", 0)),
                 name=element.get("name"),
-                # color
+                color=element.get("color"),
                 identifier=element.get("identifier"),
             )
-            glyph.appendGuideline(guideline)
+            glyph.guidelines.append(guideline)
         elif element.tag == "image":
             image = classes.Image(
                 fileName=element.attrib["fileName"],
-                transformation=_transformation(element),
+                transformation=_transformation(element, classes),
+                color=element.get("color"),
             )
-            glyph.appendImage(image)
+            glyph.image = image
         elif element.tag == "note":
             # TODO: strip whitesp?
             glyph.note = element.text
@@ -148,27 +148,27 @@ def glyphFromTree(root, classes):
 def outlineFromTree(outline, glyph, classes):
     for element in outline:
         if element.tag == "contour":
-            contour = classes.Contour()
+            contour = classes.Contour(identifier=element.get("identifier"))
             for element_ in element:
-                segmentType = element_.attrib.get("type")
+                pointType = element_.get("type")
                 # TODO: fallback to None like defcon or "offcurve"?
-                if segmentType == "offcurve":
-                    segmentType = None
+                if pointType == "offcurve":
+                    pointType = None
                 point = classes.Point(
                     x=_number(element_.attrib["x"]),
                     y=_number(element_.attrib["y"]),
-                    type=segmentType,
-                    smooth=element_.attrib.get("smooth", False),
+                    type=pointType,
+                    smooth=element_.get("smooth", False),
                     name=element_.get("name"),
                     identifier=element_.get("identifier"),
                 )
                 # TODO: collect and validate identifiers
                 contour.append(point)
-            glyph.appendContour(contour)
+            glyph.contours.append(contour)
         elif element.tag == "component":
             component = classes.Component(
                 baseGlyph=element.attrib["base"],
-                transformation=_transformation(element),
+                transformation=_transformation(element, classes),
                 identifier=element.get("identifier"),
             )
-            glyph.appendComponent(component)
+            glyph.components.append(component)

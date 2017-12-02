@@ -1,19 +1,19 @@
 import attr
-from ._common import Number, String
+from ._common import Number, OptString
 
 
 @attr.s(slots=True)
 class Info(object):
-    familyName = attr.ib(default=None, type=String)
-    styleName = attr.ib(default=None, type=String)
-    styleMapFamilyName = attr.ib(default=None, type=String)
-    styleMapStyleName = attr.ib(default=None, type=String)
+    familyName = attr.ib(default=None, type=OptString)
+    styleName = attr.ib(default=None, type=OptString)
+    styleMapFamilyName = attr.ib(default=None, type=OptString)
+    styleMapStyleName = attr.ib(default=None, type=OptString)
     versionMajor = attr.ib(default=None, type=int)
     # type is positive integer
     versionMinor = attr.ib(default=None, type=int)
 
-    copyright = attr.ib(default=None, type=String)
-    trademark = attr.ib(default=None, type=String)
+    copyright = attr.ib(default=None, type=OptString)
+    trademark = attr.ib(default=None, type=OptString)
 
     # type is positive Number
     unitsPerEm = attr.ib(default=None, type=Number)
@@ -23,11 +23,11 @@ class Info(object):
     ascender = attr.ib(default=None, type=Number)
     italicAngle = attr.ib(default=None, type=Number)
 
-    note = attr.ib(default=None, type=String)
+    note = attr.ib(default=None, type=OptString)
 
     # note: all list entries have detailed speccing
     openTypeGaspRangeRecords = attr.ib(default=attr.Factory(list), type=list)
-    openTypeHeadCreated = attr.ib(default=None, type=String)
+    openTypeHeadCreated = attr.ib(default=None, type=OptString)
     # type is positive integer
     openTypeHeadLowerRecPPEM = attr.ib(default=None, type=int)
     openTypeHeadFlags = attr.ib(default=attr.Factory(list), type=list)
@@ -39,27 +39,27 @@ class Info(object):
     openTypeHheaCaretSlopeRun = attr.ib(default=None, type=int)
     openTypeHheaCaretOffset = attr.ib(default=None, type=int)
 
-    openTypeNameDesigner = attr.ib(default=None, type=String)
-    openTypeNameDesignerURL = attr.ib(default=None, type=String)
-    openTypeNameManufacturer = attr.ib(default=None, type=String)
-    openTypeNameManufacturerURL = attr.ib(default=None, type=String)
-    openTypeNameLicense = attr.ib(default=None, type=String)
-    openTypeNameLicenseURL = attr.ib(default=None, type=String)
-    openTypeNameVersion = attr.ib(default=None, type=String)
-    openTypeNameUniqueID = attr.ib(default=None, type=String)
-    openTypeNameDescription = attr.ib(default=None, type=String)
-    openTypeNamePreferredFamilyName = attr.ib(default=None, type=String)
-    openTypeNamePreferredSubfamilyName = attr.ib(default=None, type=String)
-    openTypeNameCompatibleFullName = attr.ib(default=None, type=String)
-    openTypeNameSampleText = attr.ib(default=None, type=String)
-    openTypeNameWWSFamilyName = attr.ib(default=None, type=String)
-    openTypeNameWWSSubfamilyName = attr.ib(default=None, type=String)
+    openTypeNameDesigner = attr.ib(default=None, type=OptString)
+    openTypeNameDesignerURL = attr.ib(default=None, type=OptString)
+    openTypeNameManufacturer = attr.ib(default=None, type=OptString)
+    openTypeNameManufacturerURL = attr.ib(default=None, type=OptString)
+    openTypeNameLicense = attr.ib(default=None, type=OptString)
+    openTypeNameLicenseURL = attr.ib(default=None, type=OptString)
+    openTypeNameVersion = attr.ib(default=None, type=OptString)
+    openTypeNameUniqueID = attr.ib(default=None, type=OptString)
+    openTypeNameDescription = attr.ib(default=None, type=OptString)
+    openTypeNamePreferredFamilyName = attr.ib(default=None, type=OptString)
+    openTypeNamePreferredSubfamilyName = attr.ib(default=None, type=OptString)
+    openTypeNameCompatibleFullName = attr.ib(default=None, type=OptString)
+    openTypeNameSampleText = attr.ib(default=None, type=OptString)
+    openTypeNameWWSFamilyName = attr.ib(default=None, type=OptString)
+    openTypeNameWWSSubfamilyName = attr.ib(default=None, type=OptString)
     openTypeNameRecords = attr.ib(default=attr.Factory(list), type=list)
 
     openTypeOS2WidthClass = attr.ib(default=None, type=int)
     openTypeOS2WeightClass = attr.ib(default=None, type=int)
     openTypeOS2Selection = attr.ib(default=attr.Factory(list), type=list)
-    openTypeOS2VendorID = attr.ib(default=None, type=String)
+    openTypeOS2VendorID = attr.ib(default=None, type=OptString)
     openTypeOS2Panose = attr.ib(default=attr.Factory(list), type=list)
     openTypeOS2FamilyClass = attr.ib(default=attr.Factory(list), type=list)
     openTypeOS2UnicodeRanges = attr.ib(default=attr.Factory(list), type=list)
@@ -90,13 +90,15 @@ class Info(object):
     openTypeVheaCaretSlopeRun = attr.ib(default=None, type=int)
     openTypeVheaCaretOffset = attr.ib(default=None, type=int)
 
-    postscriptFontName = attr.ib(default=None, type=String)
-    postscriptFullName = attr.ib(default=None, type=String)
+    postscriptFontName = attr.ib(default=None, type=OptString)
+    postscriptFullName = attr.ib(default=None, type=OptString)
     postscriptSlantAngle = attr.ib(default=None, type=Number)
     postscriptUniqueID = attr.ib(default=None, type=int)
     postscriptUnderlineThickness = attr.ib(default=None, type=Number)
     postscriptUnderlinePosition = attr.ib(default=None, type=Number)
     postscriptIsFixedPitch = attr.ib(default=None, type=bool)
+    # TODO: these list might need to be None by default so not to be written to UFO
+    # see trufont bug
     postscriptBlueValues = attr.ib(default=attr.Factory(list), type=list)
     postscriptOtherBlues = attr.ib(default=attr.Factory(list), type=list)
     postscriptFamilyBlues = attr.ib(default=attr.Factory(list), type=list)
@@ -109,6 +111,6 @@ class Info(object):
     postscriptForceBold = attr.ib(default=None, type=bool)
     postscriptDefaultWidthX = attr.ib(default=None, type=Number)
     postscriptNominalWidthX = attr.ib(default=None, type=Number)
-    postscriptWeightName = attr.ib(default=None, type=String)
-    postscriptDefaultCharacter = attr.ib(default=None, type=String)
-    postscriptWindowsCharacterSet = attr.ib(default=None, type=String)
+    postscriptWeightName = attr.ib(default=None, type=OptString)
+    postscriptDefaultCharacter = attr.ib(default=None, type=OptString)
+    postscriptWindowsCharacterSet = attr.ib(default=None, type=OptString)

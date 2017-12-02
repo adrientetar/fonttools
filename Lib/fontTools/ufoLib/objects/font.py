@@ -1,8 +1,10 @@
 import attr
-from ._common import String
+from ._common import OptString
 from fontTools.ufoLib.reader import UFOReader
+#from fontTools.ufoLib.objects.dataSet import DataSet
 from fontTools.ufoLib.objects.features import Features
 from fontTools.ufoLib.objects.guideline import Guideline
+#from fontTools.ufoLib.objects.imageSet import ImageSet
 from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layerSet import LayerSet
 
@@ -11,29 +13,33 @@ DEFAULT_LAYER_NAME = "public.default"
 
 @attr.s(slots=True)
 class Font(object):
-    _path = attr.ib(default=None, type=String)
-    _features = attr.ib(init=False, repr=False, type=Features)
-    _guidelines = attr.ib(init=False, repr=False, type=list)
-    _info = attr.ib(init=False, repr=False, type=Info)
-    _layers = attr.ib(init=False, repr=False, type=LayerSet)
+    _path = attr.ib(default=None, type=OptString)
+
+    _features = attr.ib(default=None, init=False, repr=False, type=Features)
+    _groups = attr.ib(default=None, init=False, repr=False, type=dict)
+    _guidelines = attr.ib(default=None, init=False, repr=False, type=list)
+    _info = attr.ib(default=None, init=False, repr=False, type=Info)
+    _kerning = attr.ib(default=None, init=False, repr=False, type=dict)
+    _layers = attr.ib(default=attr.Factory(LayerSet), init=False, repr=False, type=LayerSet)
+
+    #_data = attr.ib(init=False, repr=False, type=DataSet)
+    #_images = attr.ib(init=False, repr=False, type=ImageSet)
 
     def __attrs_post_init__(self):
-        self._features = None
-        self._guidelines = None
-        self._info = None
-        self._layers = LayerSet()
-        # create image set
         # create data set
+        # create image set
         if self._path is not None:
             reader = UFOReader(self._path)
             # load the layers
             for name, dirName in reader.getLayerContents():
                 glyphSet = reader.getGlyphSet(dirName)
                 self._layers.newLayer(name, glyphSet=glyphSet)
-            # load images list
-            # ..
             # load data directory list
-            # ..
+            # data = reader.getDataDirectoryListing()
+            # self._data = DataSet(fileNames=data)
+            # load images list
+            # images = reader.getImageDirectoryListing()
+            # self._images = ImageSet(fileNames=images)
 
         if not self._layers:
             self._layers.newLayer(DEFAULT_LAYER_NAME)
@@ -77,6 +83,16 @@ class Font(object):
         return self._guidelines
 
     @property
+    def groups(self):
+        if self._groups is None:
+            if self._path is not None:
+                reader = UFOReader(self._path)
+                self._groups = reader.readGroups()
+            else:
+                self._groups = {}
+        return self._groups
+
+    @property
     def info(self):
         if self._info is None:
             if self._path is not None:
@@ -103,8 +119,28 @@ class Font(object):
         return self._info
 
     @property
+    def kerning(self):
+        if self._kerning is None:
+            if self._path is not None:
+                reader = UFOReader(self._path)
+                self._kerning = reader.readKerning()
+            else:
+                self._kerning = {}
+        return self._kerning
+
+    @property
     def layers(self):
         return self._layers
+
+    @property
+    def lib(self):
+        if self._lib is None:
+            if self._path is not None:
+                reader = UFOReader(self._path)
+                self._lib = reader.readLib()
+            else:
+                self._lib = {}
+        return self._lib
 
     @property
     def path(self):
@@ -118,6 +154,12 @@ class Font(object):
 
     def newLayer(self, name):
         return self._layers.newLayer(name)
+
+    def renameGlyph(self, name, newName, overwrite=False):
+        self._layers.defaultLayer.renameGlyph(name, newName, overwrite)
+
+    def renameLayer(self, name, newName, overwrite=False):
+        self._layers.renameLayer(name, newName, overwrite)
 
     def save(self, path=None):
         raise NotImplementedError

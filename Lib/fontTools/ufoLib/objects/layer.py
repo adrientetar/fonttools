@@ -1,8 +1,8 @@
 import attr
+from ._common import OptString
 from fontTools.ufoLib.objects.glyph import Glyph, GlyphClasses
 from fontTools.ufoLib.reader import GlyphSet
 
-# TODO: layer.color, layer.lib?
 # TODO: we could question the Layer/GlyphSet duality but I'd say it makes
 # sense, fwiw. how do we guarantee that the UFO hasn't been written to though?
 
@@ -11,11 +11,13 @@ from fontTools.ufoLib.reader import GlyphSet
 class Layer(object):
     _name = attr.ib(type=str)
     _glyphSet = attr.ib(default=None, repr=False, type=GlyphSet)
-    _glyphs = attr.ib(init=False, repr=False, type=dict)
+    _glyphs = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=dict)
     _keys = attr.ib(init=False, repr=False, type=set)
+    color = attr.ib(default=None, init=False, repr=False, type=OptString)
+    lib = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=dict)
 
     def __attrs_post_init__(self):
-        self._glyphs = {}
+        # TODO: this could be done lazily
         if self._glyphSet is not None:
             keys = set(self._glyphSet.keys())
         else:
@@ -55,7 +57,7 @@ class Layer(object):
     def keys(self):
         return set(self._keys)
 
-    @property  # rename from the parent? (which maintains a dict)
+    @property
     def name(self):
         return self._name
 
@@ -77,3 +79,11 @@ class Layer(object):
         self._glyphs[name] = glyph = Glyph(name)
         self._keys.add(name)
         return glyph
+
+    def renameGlyph(self, name, newName, overwrite=False):
+        if name == newName:
+            return
+        if not overwrite and newName in self._glyphs:
+            raise KeyError("a glyph named \"%s\" already exists." % newName)
+        self._glyphs[newName] = glyph = self._glyphs.pop(name)
+        glyph._name = newName

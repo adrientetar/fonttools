@@ -1,45 +1,35 @@
 import attr
-from ._common import Number
+from ._common import Number, OptString
 from fontTools.ufoLib.objects.anchor import Anchor
 from fontTools.ufoLib.objects.component import Component
 from fontTools.ufoLib.objects.contour import Contour
 from fontTools.ufoLib.objects.guideline import Guideline
-from fontTools.ufoLib.objects.image import Image
+from fontTools.ufoLib.objects.image import Image, OptImage
+from fontTools.ufoLib.objects.misc import Transformation
 from fontTools.ufoLib.objects.point import Point
+from fontTools.ufoLib.pointPens.converterPens import PointToSegmentPen, SegmentToPointPen
+from fontTools.ufoLib.pointPens.glyphPointPen import GlyphPointPen
 
-
-# TODO: look at attrs converters
-
-# TODO: clear functions?
-# TODO: getters for anchors, components etc.? (return list(self._anchors))
-# also remove funcs
 
 @attr.s(slots=True)
 class Glyph(object):
-    # XXX: same here as with Layer objects: parent maintains a dict
-    # which ought to stay up-to-date
-    # Note: also we *may* want to have a method to rename glyph in
-    # all layers, e.g. Font.renameGlyph()
-    name = attr.ib(type=str)
-    width = attr.ib(init=False, type=Number)
-    height = attr.ib(init=False, type=Number)
-    unicodes = attr.ib(init=False, type=list)
-    lib = attr.ib(init=False, repr=False, type=dict)
-    _anchors = attr.ib(init=False, repr=False, type=list)
-    _components = attr.ib(init=False, repr=False, type=list)
-    _contours = attr.ib(init=False, repr=False, type=list)
-    _guidelines = attr.ib(init=False, repr=False, type=list)
+    _name = attr.ib(type=str)
+    width = attr.ib(default=0, init=False, type=Number)
+    height = attr.ib(default=0, init=False, type=Number)
+    unicodes = attr.ib(default=attr.Factory(list), init=False, type=list)
 
-    def __attrs_post_init__(self):
-        self.width = 0
-        self.height = 0
-        self.unicodes = []
-        self.lib = []
-        # TODO: make these lazy?
-        self._anchors = []
-        self._components = []
-        self._contours = []
-        self._guidelines = []
+    image = attr.ib(default=None, init=False, repr=False, type=OptImage)
+    lib = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=dict)
+    note = attr.ib(default=None, init=False, repr=False, type=OptString)
+
+    anchors = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
+    components = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
+    contours = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
+    guidelines = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def unicode(self):
@@ -47,17 +37,47 @@ class Glyph(object):
             return self.unicodes[0]
         return None
 
-    def appendAnchor(self, anchor):
-        self._anchors.append(anchor)
+    @unicode.setter
+    def unicode(self, value):
+        if value is None:
+            self.unicodes = []
+        else:
+            if self.unicodes[0] == value:
+                return
+            try:
+                self.unicodes.remove(value)
+            except ValueError:
+                pass
+            self.unicodes.insert(0, value)
 
-    def appendComponent(self, component):
-        self._components.append(component)
+    def clear(self):
+        self.anchors = []
+        self.components = []
+        self.contours = []
+        self.guidelines = []
+        self.image = None
 
-    def appendContour(self, contour):
-        self._contours.append(contour)
+    # -----------
+    # Pen methods
+    # -----------
 
-    def appendGuideline(self, guideline):
-        self._guidelines.append(guideline)
+    def draw(self, pen):
+        pointPen = PointToSegmentPen(pen)
+        self.drawPoints(pointPen)
+
+    def drawPoints(self, pointPen):
+        for contour in self.contours:
+            contour.drawPoints(pointPen)
+        for component in self.components:
+            component.drawPoints(pointPen)
+
+    def getPen(self):
+        pen = SegmentToPointPen(self.getPointPen())
+        return pen
+
+    def getPointPen(self):
+        pointPen = GlyphPointPen(self)
+        return pointPen
 
 
 class GlyphClasses(object):
@@ -68,3 +88,5 @@ class GlyphClasses(object):
     Guideline = Guideline
     Image = Image
     Point = Point
+
+    Transformation = Transformation

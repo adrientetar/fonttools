@@ -7,9 +7,12 @@ DEFAULT_GLYPHS_DIRNAME = "glyphs"
 
 FEATURES_FILENAME = "features.plist"
 FONTINFO_FILENAME = "fontinfo.plist"
+GROUPS_FILENAME = "groups.plist"
+KERNING_FILENAME = "kerning.plist"
 LAYERCONTENTS_FILENAME = "layercontents.plist"
+LIB_FILENAME = "lib.plist"
 
-# TODO: color, dataSet, groups, kerning, imageSet, font.lib
+# TODO: dataSet, imageSet
 
 
 @attr.s(slots=True)
@@ -38,18 +41,6 @@ class UFOReader(object):
         path = os.path.join(self.path, dirName)
         return GlyphSet(path)
 
-    """
-    def getDefaultLayerName(self):
-        for name, dirName in self.getLayerContents():
-            if dirName == DEFAULT_GLYPHS_DIRNAME:
-                return name
-        raise KeyError("no default directory was found")
-
-    def getLayerNames(self):
-        # layercontents should really be a dictionary
-        return map(lambda l: l[0], self.getLayerContents())
-    """
-
     # single reads
 
     def readFeatures(self):
@@ -61,8 +52,38 @@ class UFOReader(object):
             text = ""
         return text
 
+    def readGroups(self):
+        path = os.path.join(self.path, GROUPS_FILENAME)
+        try:
+            with open(path, "rb") as file:
+                data = plistlib.load(file)
+        except FileNotFoundError:
+            data = {}
+        return data
+
     def readInfo(self):
         path = os.path.join(self.path, FONTINFO_FILENAME)
-        with open(path, "rb") as file:
-            infoDict = plistlib.load(file)
-        return infoDict
+        try:
+            with open(path, "rb") as file:
+                data = plistlib.load(file)
+        except FileNotFoundError:
+            data = {}
+        return data
+
+    def readKerning(self):
+        path = os.path.join(self.path, KERNING_FILENAME)
+        try:
+            with open(path, "rb") as file:
+                data = plistlib.load(file)
+        except FileNotFoundError:
+            data = {}
+        return data
+
+    def readLib(self):
+        path = os.path.join(self.path, LIB_FILENAME)
+        try:
+            with open(path, "rb") as file:
+                data = plistlib.load(file)
+        except FileNotFoundError:
+            data = {}
+        return data
