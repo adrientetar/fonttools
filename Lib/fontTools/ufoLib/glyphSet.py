@@ -49,6 +49,12 @@ class GlyphSet(object):
 
     # dict
 
+    def __contains__(self, name):
+        return name in self._contents
+
+    def __len__(self):
+        return len(self._contents)
+
     def items(self):
         return self._contents.items()
 
@@ -57,26 +63,6 @@ class GlyphSet(object):
 
     def values(self):
         return self._contents.values()
-
-    """
-    def __contains__(self, item):
-        pass
-
-    def __iter__(self):
-        pass
-
-    def __getitem__(self, key):
-        pass
-
-    def __setitem__(self, key, value):
-        pass
-
-    def __delitem__(self, key):
-        pass
-
-    def __len__(self):
-        pass
-    """
 
 
 def _number(s):

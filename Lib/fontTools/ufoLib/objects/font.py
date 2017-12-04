@@ -15,7 +15,7 @@ DEFAULT_LAYER_NAME = "public.default"
 class Font(object):
     _path = attr.ib(default=None, type=OptString)
 
-    _features = attr.ib(default=None, init=False, repr=False, type=Features)
+    _features = attr.ib(default=None, init=False, repr=False, type=OptString)
     _groups = attr.ib(default=None, init=False, repr=False, type=dict)
     _guidelines = attr.ib(default=None, init=False, repr=False, type=list)
     _info = attr.ib(default=None, init=False, repr=False, type=Info)
@@ -73,8 +73,12 @@ class Font(object):
                 text = reader.readFeatures()
             else:
                 text = ""
-            self._features = Features(text)
+            self._features = text
         return self._features
+
+    @features.setter
+    def features(self, text):
+        self._features = text
 
     @property
     def guidelines(self):
