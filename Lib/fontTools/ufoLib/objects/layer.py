@@ -71,10 +71,14 @@ class Layer(object):
             raise KeyError("a glyph named \"%s\" already exists." % glyph.name)
         self._glyphs[glyph.name] = glyph
         self._keys.add(glyph.name)
+        if glyph.name in self._scheduledForDeletion:
+            self._scheduledForDeletion.remove(glyph.name)
 
     def loadGlyph(self, name):
-        if self._glyphSet is None or name not in self._glyphSet:
-            return
+        # Note: it seems defcon doesn't blacklist scheduledForDeletion members here, but it should
+        # otherwise we'll reload glyphs that should be deleted if they're on disk
+        if self._glyphSet is None or name not in self._glyphSet or name in self._scheduledForDeletion:
+            raise KeyError("%s not in layer" % name)
         glyph = self._glyphSet.readGlyph(name, GlyphClasses)
         self._glyphs[name] = glyph
 
@@ -83,6 +87,8 @@ class Layer(object):
             raise KeyError("a glyph named \"%s\" already exists." % name)
         self._glyphs[name] = glyph = Glyph(name)
         self._keys.add(name)
+        if name in self._scheduledForDeletion:
+            self._scheduledForDeletion.remove(name)
         return glyph
 
     def renameGlyph(self, name, newName, overwrite=False):
@@ -96,5 +102,7 @@ class Layer(object):
         # add new
         self._glyphs[newName] = glyph
         self._keys.add(newName)
+        if newName in self._scheduledForDeletion:
+            self._scheduledForDeletion.remove(newName)
         # set name
         glyph._name = newName

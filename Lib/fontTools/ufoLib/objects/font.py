@@ -2,7 +2,6 @@ import attr
 from ._common import OptString
 from fontTools.ufoLib.reader import UFOReader
 #from fontTools.ufoLib.objects.dataSet import DataSet
-from fontTools.ufoLib.objects.features import Features
 from fontTools.ufoLib.objects.guideline import Guideline
 #from fontTools.ufoLib.objects.imageSet import ImageSet
 from fontTools.ufoLib.objects.info import Info
@@ -70,10 +69,9 @@ class Font(object):
         if self._features is None:
             if self._path is not None:
                 reader = UFOReader(self._path)
-                text = reader.readFeatures()
+                self._features = reader.readFeatures()
             else:
-                text = ""
-            self._features = text
+                self._features = ""
         return self._features
 
     @features.setter

@@ -1,7 +1,6 @@
 from fontTools.ufoLib.objects.anchor import Anchor
 from fontTools.ufoLib.objects.component import Component
 from fontTools.ufoLib.objects.contour import Contour
-from fontTools.ufoLib.objects.features import Features
 from fontTools.ufoLib.objects.font import Font
 from fontTools.ufoLib.objects.glyph import Glyph
 from fontTools.ufoLib.objects.guideline import Guideline
