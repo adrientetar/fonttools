@@ -12,14 +12,18 @@ LAYERINFO_FILENAME = "layerinfo.plist"
 
 @attr.s(slots=True)
 class GlyphSet(object):
-    path = attr.ib(type=str)
+    _path = attr.ib(type=str)
     _contents = attr.ib(init=False, type=dict)
 
     def __attrs_post_init__(self):
         self.rebuildContents()
 
+    @property
+    def path(self):
+        return self._path
+
     def rebuildContents(self):
-        path = os.path.join(self.path, CONTENTS_FILENAME)
+        path = os.path.join(self._path, CONTENTS_FILENAME)
         try:
             with open(path, "rb") as file:
                 contents = plistlib.load(file)
@@ -29,7 +33,7 @@ class GlyphSet(object):
 
     def readGlyph(self, name, classes):
         fileName = self._contents[name]
-        path = os.path.join(self.path, fileName)
+        path = os.path.join(self._path, fileName)
         try:
             with open(path, "rb") as file:
                 tree = etree.parse(file)
@@ -38,7 +42,7 @@ class GlyphSet(object):
         return glyphFromTree(tree.getroot(), classes)
 
     def readLayerInfo(self, layer):
-        path = os.path.join(self.path, LAYERINFO_FILENAME)
+        path = os.path.join(self._path, LAYERINFO_FILENAME)
         try:
             with open(path, "rb") as file:
                 layerDict = plistlib.load(file)

@@ -1,9 +1,9 @@
 import attr
 from ._common import OptString
 from fontTools.ufoLib.reader import UFOReader
-#from fontTools.ufoLib.objects.dataSet import DataSet
+from fontTools.ufoLib.objects.dataSet import DataSet
 from fontTools.ufoLib.objects.guideline import Guideline
-#from fontTools.ufoLib.objects.imageSet import ImageSet
+from fontTools.ufoLib.objects.imageSet import ImageSet
 from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layerSet import LayerSet
 
@@ -21,12 +21,10 @@ class Font(object):
     _kerning = attr.ib(default=None, init=False, repr=False, type=dict)
     _layers = attr.ib(default=attr.Factory(LayerSet), init=False, repr=False, type=LayerSet)
 
-    #_data = attr.ib(init=False, repr=False, type=DataSet)
-    #_images = attr.ib(init=False, repr=False, type=ImageSet)
+    _data = attr.ib(init=False, repr=False, type=DataSet)
+    _images = attr.ib(init=False, repr=False, type=ImageSet)
 
     def __attrs_post_init__(self):
-        # create data set
-        # create image set
         if self._path is not None:
             reader = UFOReader(self._path)
             # load the layers
@@ -34,11 +32,14 @@ class Font(object):
                 glyphSet = reader.getGlyphSet(dirName)
                 self._layers.newLayer(name, glyphSet=glyphSet)
             # load data directory list
-            # data = reader.getDataDirectoryListing()
-            # self._data = DataSet(fileNames=data)
+            data = reader.getDataDirectoryListing()
+            self._data = DataSet(path=self._path, fileNames=data)
             # load images list
-            # images = reader.getImageDirectoryListing()
-            # self._images = ImageSet(fileNames=images)
+            images = reader.getImageDirectoryListing()
+            self._images = ImageSet(path=self._path, fileNames=images)
+        else:
+            self._data = DataSet()
+            self._images = ImageSet()
 
         if not self._layers:
             self._layers.newLayer(DEFAULT_LAYER_NAME)

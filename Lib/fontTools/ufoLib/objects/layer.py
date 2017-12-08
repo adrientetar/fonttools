@@ -75,8 +75,6 @@ class Layer(object):
             self._scheduledForDeletion.remove(glyph.name)
 
     def loadGlyph(self, name):
-        # Note: it seems defcon doesn't blacklist scheduledForDeletion members here, but it should
-        # otherwise we'll reload glyphs that should be deleted if they're on disk
         if self._glyphSet is None or name not in self._glyphSet or name in self._scheduledForDeletion:
             raise KeyError("%s not in layer" % name)
         glyph = self._glyphSet.readGlyph(name, GlyphClasses)
