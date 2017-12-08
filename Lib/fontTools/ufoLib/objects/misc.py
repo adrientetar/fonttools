@@ -15,10 +15,6 @@ class DataStore(object):
     def __contains__(self, fileName):
         return fileName in self._fileNames
 
-    def __iter__(self):
-        for fileName in self._fileNames:
-            yield self[fileName]
-
     def __len__(self):
         return len(self._fileNames)
 
