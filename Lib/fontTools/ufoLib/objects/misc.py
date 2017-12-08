@@ -25,11 +25,12 @@ class DataStore(object):
         return fileName in self._keys
 
     def __getitem__(self, fileName):
-        data = self._data[fileName]
-        if data is None:
+        if fileName not in self._data:
+            if fileName not in self._keys:
+                raise KeyError("%s not in store" % fileName)
             reader = UFOReader(self._path)
-            data = self._data[fileName] = self.getter(reader, fileName)
-        return data
+            self._data[fileName] = self.getter(reader, fileName)
+        return self._data[fileName]
 
     def __setitem__(self, fileName, data):
         # should we forbid overwrite?
