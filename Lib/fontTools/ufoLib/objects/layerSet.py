@@ -25,6 +25,9 @@ class LayerSet(object):
     def __len__(self):
         return len(self._layers)
 
+    def keys(self):
+        return self._layers.keys()
+
     @property
     def defaultLayer(self):
         try:
