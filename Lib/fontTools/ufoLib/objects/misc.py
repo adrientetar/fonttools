@@ -15,6 +15,13 @@ class DataStore(object):
     def __contains__(self, fileName):
         return fileName in self._fileNames
 
+    def __iter__(self):
+        for fileName in self._fileNames:
+            yield self[fileName]
+
+    def __len__(self):
+        return len(self._fileNames)
+
     def __getitem__(self, fileName):
         if fileName not in self._data:
             if fileName not in self._fileNames:
@@ -34,6 +41,9 @@ class DataStore(object):
         del self._data[fileName]
         self._fileNames.remove(fileName)
         self._scheduledForDeletion.add(fileName)
+
+    def keys(self):
+        return set(self._fileNames)
 
 
 @attr.s(slots=True)
