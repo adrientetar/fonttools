@@ -8,7 +8,7 @@ class DataStore(object):
     getter = None
 
     _path = attr.ib(type=str)
-    _fileNames = attr.ib(default=None, repr=False, type=set)
+    _fileNames = attr.ib(default=attr.Factory(set), repr=False, type=set)
     _data = attr.ib(default=attr.Factory(dict), init=False, type=dict)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False, type=set)
 
