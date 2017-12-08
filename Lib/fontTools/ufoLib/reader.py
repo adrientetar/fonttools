@@ -33,7 +33,7 @@ class UFOReader(object):
         if depth > maxDepth:
             # should we just silently return here?
             raise RuntimeError("Maximum depth reached: %s" % maxDepth)
-        files = []
+        files = set()
         try:
             listdir = os.listdir(path)
         except FileNotFoundError:
@@ -41,15 +41,15 @@ class UFOReader(object):
         for fileName in listdir:
             f = os.path.join(path, fileName)
             if os.path.isdir(f):
-                files.extend(self._getDirectoryListing(f, depth=depth+1, maxDepth=maxDepth))
+                files.update(self._getDirectoryListing(f, depth=depth+1, maxDepth=maxDepth))
             else:
                 relPath = os.path.relPath(f, self._path)
-                files.append(relPath)
-        return relPath
+                files.add(relPath)
+        return files
 
     def getImageDirectoryListing(self):
         path = os.path.join(self._path, IMAGES_DIRNAME)
-        files = []
+        files = set()
         try:
             listdir = os.listdir(path)
         except FileNotFoundError:
@@ -58,7 +58,7 @@ class UFOReader(object):
             f = os.path.join(path, fileName)
             if os.path.isdir(f):
                 continue
-            files.append(fileName)
+            files.add(fileName)
         return files
 
     # layers
@@ -81,7 +81,7 @@ class UFOReader(object):
         path = os.path.join(self._path, dirName)
         return GlyphSet(path)
 
-    # single reads
+    # bin
 
     def readData(self, fileName):
         path = os.path.join(self._path, DATA_DIRNAME, fileName)
@@ -100,6 +100,8 @@ class UFOReader(object):
         except FileNotFoundError:
             data = None
         return data
+
+    # single reads
 
     def readFeatures(self):
         path = os.path.join(self._path, FEATURES_FILENAME)

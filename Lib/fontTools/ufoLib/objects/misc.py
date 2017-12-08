@@ -8,25 +8,16 @@ class DataStore(object):
     getter = None
 
     _path = attr.ib(type=str)
-    _fileNames = attr.ib(default=None, repr=False, type=list)
+    _fileNames = attr.ib(default=None, repr=False, type=set)
     _data = attr.ib(default=attr.Factory(dict), init=False, type=dict)
-    _keys = attr.ib(init=False, repr=False, type=set)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False, type=set)
 
-    def __attrs_post_init__(self):
-        # TODO: this could be done lazily
-        if self._fileNames is not None:
-            keys = set(self._fileNames)
-        else:
-            keys = set()
-        self._keys = keys
-
     def __contains__(self, fileName):
-        return fileName in self._keys
+        return fileName in self._fileNames
 
     def __getitem__(self, fileName):
         if fileName not in self._data:
-            if fileName not in self._keys:
+            if fileName not in self._fileNames:
                 raise KeyError("%s not in store" % fileName)
             reader = UFOReader(self._path)
             self._data[fileName] = self.getter(reader, fileName)
@@ -35,13 +26,13 @@ class DataStore(object):
     def __setitem__(self, fileName, data):
         # should we forbid overwrite?
         self._data[fileName] = data
-        self._keys.add(fileName)
+        self._fileNames.add(fileName)
         if fileName in self._scheduledForDeletion:
             self._scheduledForDeletion.remove(fileName)
 
     def __delitem__(self, fileName):
         del self._data[fileName]
-        self._keys.remove(fileName)
+        self._fileNames.remove(fileName)
         self._scheduledForDeletion.add(fileName)
 
 
