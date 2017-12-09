@@ -7,7 +7,7 @@ from fontTools.ufoLib.reader import UFOReader
 class DataStore(object):
     getter = None
 
-    _path = attr.ib(type=str)
+    _path = attr.ib(default=None, type=str)
     _fileNames = attr.ib(default=attr.Factory(set), repr=False, type=set)
     _data = attr.ib(default=attr.Factory(dict), init=False, type=dict)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False, type=set)

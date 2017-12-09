@@ -27,25 +27,24 @@ class UFOReader(object):
 
     def getDataDirectoryListing(self, maxDepth=24):
         path = os.path.join(self._path, DATA_DIRNAME)
-        return self._getDirectoryListing(path, maxDepth=maxDepth)
-
-    def _getDirectoryListing(self, path, depth=0, maxDepth=24):
-        if depth > maxDepth:
-            # should we just silently return here?
-            raise RuntimeError("Maximum depth reached: %s" % maxDepth)
         files = set()
+        self._getDirectoryListing(path, files, maxDepth=maxDepth)
+        return files
+
+    def _getDirectoryListing(self, path, files, depth=0, maxDepth=24):
+        if depth > maxDepth:
+            raise RuntimeError("Maximum depth reached: %s" % maxDepth)
         try:
             listdir = os.listdir(path)
         except FileNotFoundError:
-            return files
+            return
         for fileName in listdir:
             f = os.path.join(path, fileName)
             if os.path.isdir(f):
-                files.update(self._getDirectoryListing(f, depth=depth+1, maxDepth=maxDepth))
+                self._getDirectoryListing(f, files, depth=depth+1, maxDepth=maxDepth)
             else:
                 relPath = os.path.relPath(f, self._path)
                 files.add(relPath)
-        return files
 
     def getImageDirectoryListing(self):
         path = os.path.join(self._path, IMAGES_DIRNAME)
@@ -72,7 +71,6 @@ class UFOReader(object):
         with open(path, "rb") as file:
             # TODO: rewrite plistlib
             self._layerContents = plistlib.load(file)
-        # TODO: check the data
         if self._layerContents:
             assert self._layerContents[0][1] == DEFAULT_GLYPHS_DIRNAME
         return self._layerContents

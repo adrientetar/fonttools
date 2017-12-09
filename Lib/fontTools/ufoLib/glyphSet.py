@@ -152,7 +152,6 @@ def outlineFromTree(outline, glyph, classes):
                     name=element_.get("name"),
                     identifier=element_.get("identifier"),
                 )
-                # TODO: collect and validate identifiers
                 contour.append(point)
             glyph.contours.append(contour)
         elif element.tag == "component":
