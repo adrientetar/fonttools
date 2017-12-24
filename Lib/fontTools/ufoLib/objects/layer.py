@@ -104,3 +104,17 @@ class Layer(object):
             self._scheduledForDeletion.remove(newName)
         # set name
         glyph._name = newName
+
+    def save(self, glyphSet, saveAs=False):
+        if saveAs:
+            glyphs = self
+        else:
+            glyphs = self._glyphs
+            for name in self._scheduledForDeletion:
+                if name in glyphSet:
+                    glyphSet.deleteGlyph(name)
+        for glyph in glyphs:
+            glyphSet.writeGlyph(glyph)
+        glyphSet.writeContents()
+        self._glyphSet = glyphSet
+        self._scheduledForDeletion = set()

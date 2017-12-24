@@ -5,7 +5,9 @@ from fontTools.ufoLib.reader import UFOReader
 
 @attr.s(slots=True)
 class DataStore(object):
-    getter = None
+    readf = None
+    writef = None
+    deletef = None
 
     _path = attr.ib(default=None, type=str)
     _fileNames = attr.ib(default=attr.Factory(set), repr=False, type=set)
@@ -23,7 +25,7 @@ class DataStore(object):
             if fileName not in self._fileNames:
                 raise KeyError("%s not in store" % fileName)
             reader = UFOReader(self._path)
-            self._data[fileName] = self.getter(reader, fileName)
+            self._data[fileName] = self.readf(reader, fileName)
         return self._data[fileName]
 
     def __setitem__(self, fileName, data):
@@ -40,6 +42,17 @@ class DataStore(object):
 
     def keys(self):
         return set(self._fileNames)
+
+    def save(self, writer, saveAs=False):
+        # if in-place, remove deleted data
+        if not saveAs:
+            for fileName in self._scheduledForDeletion:
+                self.deletef(writer, fileName)
+        # write data
+        for fileName in self._fileNames:
+            data = self[fileName]
+            self.writef(writer, fileName, data)
+        self._scheduledForDeletion = set()
 
 
 @attr.s(slots=True)

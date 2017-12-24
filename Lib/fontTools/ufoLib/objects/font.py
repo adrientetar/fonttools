@@ -1,11 +1,12 @@
 import attr
 from ._common import OptString
-from fontTools.ufoLib.reader import UFOReader
 from fontTools.ufoLib.objects.dataSet import DataSet
 from fontTools.ufoLib.objects.guideline import Guideline
 from fontTools.ufoLib.objects.imageSet import ImageSet
 from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layerSet import LayerSet
+from fontTools.ufoLib.reader import UFOReader
+from fontTools.ufoLib.writer import UFOWriter
 
 DEFAULT_LAYER_NAME = "public.default"
 
@@ -165,4 +166,32 @@ class Font(object):
         self._layers.renameLayer(name, newName, overwrite)
 
     def save(self, path=None):
-        raise NotImplementedError
+        saveAs = path is not None
+        # XXX: if saveAs, require that path does not exists
+        # so we don't deal with
+        if not saveAs:
+            path = self._path
+        # assert default layer is present? --> in the writer, we do it in the reader
+        # forbid deleting default/or all layers in layerSet?
+        # if self.layers.defaultLayer.name != "public.default":
+        #     assert "public.default" not in self.layers.layerOrder
+        writer = UFOWriter(path)
+        # save font attrs
+        if self._features is not None or saveAs:
+            writer.writeFeatures(self.features)
+        if self._groups is not None or saveAs:
+            writer.writeGroups(self.groups)
+        # guidelines?
+        if self._info is not None or saveAs:
+            writer.writeInfo(self.info)
+        if self._kerning is not None or saveAs:
+            writer.writeKerning(self.kerning)
+        if self._lib is not None or saveAs:
+            writer.writeLib(self.lib)
+        # save the layers
+        self._layers.save(writer, saveAs=saveAs)
+        # save bin parts
+        self._data.save(writer, saveAs=saveAs)
+        self._images.save(writer, saveAs=saveAs)
+
+        self._path = path

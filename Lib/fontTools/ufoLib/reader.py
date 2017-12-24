@@ -1,18 +1,11 @@
 import attr
+from fontTools.ufoLib.constants import (
+    DATA_DIRNAME, DEFAULT_GLYPHS_DIRNAME, FEATURES_FILENAME, FONTINFO_FILENAME,
+    GROUPS_FILENAME, IMAGES_DIRNAME, KERNING_FILENAME, LAYERCONTENTS_FILENAME,
+    LIB_FILENAME)
 from fontTools.ufoLib.glyphSet import GlyphSet
 import os
 import plistlib
-
-DATA_DIRNAME = "data"
-DEFAULT_GLYPHS_DIRNAME = "glyphs"
-IMAGES_DIRNAME = "images"
-
-FEATURES_FILENAME = "features.plist"
-FONTINFO_FILENAME = "fontinfo.plist"
-GROUPS_FILENAME = "groups.plist"
-KERNING_FILENAME = "kerning.plist"
-LAYERCONTENTS_FILENAME = "layercontents.plist"
-LIB_FILENAME = "lib.plist"
 
 
 @attr.s(slots=True)
@@ -41,7 +34,8 @@ class UFOReader(object):
         for fileName in listdir:
             f = os.path.join(path, fileName)
             if os.path.isdir(f):
-                self._getDirectoryListing(f, files, depth=depth+1, maxDepth=maxDepth)
+                self._getDirectoryListing(
+                    f, files, depth=depth+1, maxDepth=maxDepth)
             else:
                 relPath = os.path.relPath(f, self._path)
                 files.add(relPath)

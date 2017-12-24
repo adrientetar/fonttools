@@ -6,6 +6,7 @@ from fontTools.ufoLib.objects.layer import Layer
 @attr.s(slots=True)
 class LayerSet(object):
     _layers = attr.ib(init=False, type=OrderedDict)
+    _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False, type=set)
 
     def __attrs_post_init__(self):
         self._layers = OrderedDict()
@@ -15,6 +16,7 @@ class LayerSet(object):
 
     def __delitem__(self, name):
         del self._layers[name]
+        self._scheduledForDeletion.add(name)
 
     def __getitem__(self, name):
         return self._layers[name]
@@ -72,6 +74,8 @@ class LayerSet(object):
         # TODO: should this be done in Layer ctor?
         if glyphSet is not None:
             glyphSet.readLayerInfo(layer)
+        if name in self._scheduledForDeletion:
+            self._scheduledForDeletion.remove(name)
         return layer
 
     def renameGlyph(self, name, newName, overwrite=False):
@@ -100,4 +104,21 @@ class LayerSet(object):
         if not overwrite and newName in self._layers:
             raise KeyError("a layer named \"%s\" already exists." % newName)
         self._layers[newName] = layer = self._layers.pop(name)
+        self._scheduledForDeletion.add(name)
+        if newName in self._scheduledForDeletion:
+            self._scheduledForDeletion.remove(newName)
         layer._name = newName
+
+    def save(self, writer, saveAs=False):
+        # if in-place, remove deleted layers
+        if not saveAs:
+            for layerName in self._scheduledForDeletion:
+                writer.deleteGlyphSet(layerName)
+        # write layers
+        for layer in self:
+            glyphSet = writer.getGlyphSet(layer.name)
+            layer.save(glyphSet, saveAs=saveAs)
+            # do this need a separate call?
+            glyphSet.writeLayerInfo(layer)
+        writer.writeLayerContents(self.layerOrder)
+        self._scheduledForDeletion = set()

@@ -5,4 +5,4 @@
 
 from fontTools.ufoLib.objects import Font
 from fontTools.ufoLib.reader import UFOReader
-#from fontTools.ufoLib.writer import UFOWriter
+from fontTools.ufoLib.writer import UFOWriter
