@@ -69,7 +69,7 @@ class GlyphSet(object):
     def writeGlyph(self, glyph):
         if not glyph.name:
             raise KeyError("name %s is not a string" % repr(glyph.name))
-        fileName = self._contents.get[glyph.name]
+        fileName = self._contents.get(glyph.name)
         if fileName is None:
             # TODO: we could cache this to avoid recreating it for every glyph
             existing = set(name.lower() for name in self._contents.values())
@@ -79,13 +79,14 @@ class GlyphSet(object):
         tree = etree.ElementTree(root)
         path = os.path.join(self._path, fileName)
         with open(path, "wb") as file:
-            tree.write(file, encoding="utf-8", xml_declaration=True)
+            tree.write(file, encoding="utf-8", pretty_print=True, xml_declaration=True)
 
     def writeLayerInfo(self, layer):
-        layerDict = {
-            "color": layer.color,
-            "lib": layer.lib,
-        }
+        layerDict = {}
+        if layer.color is not None:
+            layerDict["color"] = layer.color
+        if layer.lib:
+            layerDict["lib"] = layer.lib
         path = os.path.join(self._path, LAYERINFO_FILENAME)
         with open(path, "wb") as file:
             plistlib.dump(layerDict, file)
@@ -126,27 +127,41 @@ def _transformation(element, classes):
     )
 
 
+def _transformation_back(transformation, d):
+    if transformation.xScale != 1:
+        d["xScale"] = repr(transformation.xScale)
+    if transformation.xyScale != 0:
+        d["xyScale"] = repr(transformation.xyScale)
+    if transformation.yxScale != 0:
+        d["yxScale"] = repr(transformation.yxScale)
+    if transformation.yScale != 1:
+        d["yScale"] = repr(transformation.yScale)
+    if transformation.xOffset != 0:
+        d["xOffset"] = repr(transformation.xOffset)
+    if transformation.yOffset != 0:
+        d["yOffset"] = repr(transformation.yOffset)
+
+
 def glyphFromTree(root, classes):
     glyph = classes.Glyph(root.attrib["name"])
     unicodes = []
     for element in root:
-        if element.tag == "outline":
-            outlineFromTree(element, glyph, classes)
-        elif element.tag == "advance":
+        if element.tag == "advance":
             for key in ("width", "height"):
                 if key in element.attrib:
                     setattr(glyph, key, _number(element.attrib[key]))
         elif element.tag == "unicode":
             unicodes.append(int(element.attrib["hex"], 16))
-        elif element.tag == "anchor":
-            anchor = classes.Anchor(
-                x=_number(element.attrib["x"]),
-                y=_number(element.attrib["y"]),
-                name=element.get("name"),
+        elif element.tag == "note":
+            # TODO: strip whitesp?
+            glyph.note = element.text
+        elif element.tag == "image":
+            image = classes.Image(
+                fileName=element.attrib["fileName"],
+                transformation=_transformation(element, classes),
                 color=element.get("color"),
-                identifier=element.get("identifier"),
             )
-            glyph.anchors.append(anchor)
+            glyph.image = image
         elif element.tag == "guideline":
             guideline = classes.Guideline(
                 x=_number(element.get("x", 0)),
@@ -157,16 +172,17 @@ def glyphFromTree(root, classes):
                 identifier=element.get("identifier"),
             )
             glyph.guidelines.append(guideline)
-        elif element.tag == "image":
-            image = classes.Image(
-                fileName=element.attrib["fileName"],
-                transformation=_transformation(element, classes),
+        elif element.tag == "anchor":
+            anchor = classes.Anchor(
+                x=_number(element.attrib["x"]),
+                y=_number(element.attrib["y"]),
+                name=element.get("name"),
                 color=element.get("color"),
+                identifier=element.get("identifier"),
             )
-            glyph.image = image
-        elif element.tag == "note":
-            # TODO: strip whitesp?
-            glyph.note = element.text
+            glyph.anchors.append(anchor)
+        elif element.tag == "outline":
+            outlineFromTree(element, glyph, classes)
         elif element.tag == "lib":
             glyph.lib = plistlib.loads(
                 etree.tostring(element), fmt=plistlib.FMT_XML)
@@ -180,7 +196,6 @@ def outlineFromTree(outline, glyph, classes):
             contour = classes.Contour(identifier=element.get("identifier"))
             for element_ in element:
                 pointType = element_.get("type")
-                # TODO: fallback to None like defcon or "offcurve"?
                 if pointType == "offcurve":
                     pointType = None
                 point = classes.Point(
@@ -203,34 +218,37 @@ def outlineFromTree(outline, glyph, classes):
 
 
 def treeFromGlyph(glyph):
-    root = etree.Element("glyph", {"name": glyph.name, "format": 3})
-    treeFromOutline(glyph, etree.SubElement(root, "outline"))
+    root = etree.Element("glyph", {"name": glyph.name, "format": repr(2)})
+    # advance
     if glyph.width or glyph.height:
         advance = etree.SubElement(root, "advance")
         if glyph.width:
-            advance.attrib["width"] = glyph.width
+            advance.attrib["width"] = repr(glyph.width)
         if glyph.height:
-            advance.attrib["height"] = glyph.height
+            advance.attrib["height"] = repr(glyph.height)
+    # unicodes
     if glyph.unicodes:
         for value in glyph.unicodes:
             etree.SubElement(root, "unicode", {"hex": "%04X" % value})
-    for anchor in glyph.anchors:
+    # note
+    if glyph.note:
+        # TODO: indent etc.?
+        etree.SubElement(root, "note", text=glyph.note)
+    # image
+    if glyph.image is not None:
         attrs = {
-            "x": anchor.x,
-            "y": anchor.y,
+            "fileName": glyph.image.fileName,
         }
-        if anchor.name is not None:
-            attrs["name"] = anchor.name
-        if anchor.color is not None:
-            attrs["color"] = anchor.color
-        if anchor.identifier is not None:
-            attrs["identifier"] = anchor.identifier
-        etree.SubElement(root, "anchor", attrs)
+        _transformation_back(glyph.image.transformation, attrs)
+        if glyph.image.color is not None:
+            attrs["color"] = glyph.image.color
+        etree.SubElement(root, "image", attrs)
+    # guidelines
     for guideline in glyph.guidelines:
         attrs = {
-            "x": guideline.x,
-            "y": guideline.y,
-            "angle": guideline.angle,
+            "x": repr(guideline.x),
+            "y": repr(guideline.y),
+            "angle": repr(guideline.angle),
         }
         if guideline.name is not None:
             attrs["name"] = guideline.name
@@ -239,22 +257,22 @@ def treeFromGlyph(glyph):
         if guideline.identifier is not None:
             attrs["identifier"] = guideline.identifier
         etree.SubElement(root, "guideline", attrs)
-    if glyph.image is not None:
+    # anchors
+    for anchor in glyph.anchors:
         attrs = {
-            "fileName": glyph.image.fileName,
-            "xScale": glyph.image.transformation.xScale,
-            "xyScale": glyph.image.transformation.xyScale,
-            "yxScale": glyph.image.transformation.yxScale,
-            "yScale": glyph.image.transformation.yScale,
-            "xOffset": glyph.image.transformation.xOffset,
-            "yOffset": glyph.image.transformation.yOffset,
+            "x": repr(anchor.x),
+            "y": repr(anchor.y),
         }
-        if glyph.image.color is not None:
-            attrs["color"] = glyph.image.color
-        etree.SubElement(root, "image", attrs)
-    if glyph.note:
-        # TODO: indent etc.?
-        etree.SubElement(root, "note", text=glyph.note)
+        if anchor.name is not None:
+            attrs["name"] = anchor.name
+        if anchor.color is not None:
+            attrs["color"] = anchor.color
+        if anchor.identifier is not None:
+            attrs["identifier"] = anchor.identifier
+        etree.SubElement(root, "anchor", attrs)
+    # outline
+    treeFromOutline(glyph, etree.SubElement(root, "outline"))
+    # lib
     if glyph.lib:
         root.append(
             etree.fromstring(plistlib.dumps(glyph.lib)))
@@ -268,11 +286,13 @@ def treeFromOutline(glyph, outline):
             element.attrib["identifier"] = contour.identifier
         for point in contour:
             attrs = {
-                "x": point.x,
-                "y": point.y,
-                "type": point.type or "offcurve",
-                "smooth": point.smooth,
+                "x": repr(point.x),
+                "y": repr(point.y),
             }
+            if point.type is not None:
+                attrs["type"] = point.type
+            if point.smooth:
+                attrs["smooth"] = "yes"
             if point.name is not None:
                 attrs["name"] = point.name
             if point.identifier is not None:
@@ -281,13 +301,8 @@ def treeFromOutline(glyph, outline):
     for component in glyph.components:
         attrs = {
             "base": component.baseGlyph,
-            "xScale": component.transformation.xScale,
-            "xyScale": component.transformation.xyScale,
-            "yxScale": component.transformation.yxScale,
-            "yScale": component.transformation.yScale,
-            "xOffset": component.transformation.xOffset,
-            "yOffset": component.transformation.yOffset,
         }
+        _transformation_back(component.transformation, attrs)
         if component.identifier is not None:
                 attrs["identifier"] = component.identifier
         etree.SubElement(outline, "component", attrs)

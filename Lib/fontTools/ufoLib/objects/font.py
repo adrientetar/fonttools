@@ -21,6 +21,7 @@ class Font(object):
     _info = attr.ib(default=None, init=False, repr=False, type=Info)
     _kerning = attr.ib(default=None, init=False, repr=False, type=dict)
     _layers = attr.ib(default=attr.Factory(LayerSet), init=False, repr=False, type=LayerSet)
+    _lib = attr.ib(default=None, init=False, repr=False, type=dict)
 
     _data = attr.ib(init=False, repr=False, type=DataSet)
     _images = attr.ib(init=False, repr=False, type=ImageSet)
@@ -177,24 +178,13 @@ class Font(object):
         if self._groups is not None or saveAs:
             writer.writeGroups(self.groups)
         if self._info is not None or saveAs:
-            info = attr.asdict(self.info)
-            guidelines = []
-            for guideline in self.guidelines:
-                data = {
-                    "x": guideline.x,
-                    "y": guideline.y,
-                    "angle": guideline.angle,
-                }
-                if guideline.name is not None:
-                    data["name"] = guideline.name
-                if guideline.color is not None:
-                    data["color"] = guideline.color
-                if guideline.identifier is not None:
-                    data["identifier"] = guideline.identifier
-                guidelines.append(data)
-            if guidelines:
-                info["guidelines"] = guidelines
-            writer.writeInfo(self.info)
+            info = attr.asdict(
+                self.info, filter=attr.filters.exclude(type(None)))
+            if self.guidelines:
+                info["guidelines"] = [
+                    attr.asdict(g, filter=attr.filters.exclude(
+                        type(None))) for g in self.guidelines]
+            writer.writeInfo(info)
         if self._kerning is not None or saveAs:
             writer.writeKerning(self.kerning)
         if self._lib is not None or saveAs:

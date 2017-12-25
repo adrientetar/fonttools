@@ -93,7 +93,8 @@ class LayerSet(object):
                 if overwrite:
                     del layer[newName]
                 else:
-                    raise KeyError("target name %s already exists" % repr(newName))
+                    raise KeyError(
+                        "target name %s already exists" % repr(newName))
         # now do the move
         for layer in self:
             if name in layer:
@@ -117,8 +118,10 @@ class LayerSet(object):
             for layerName in self._scheduledForDeletion:
                 writer.deleteGlyphSet(layerName)
         # write layers
+        defaultLayer = self.defaultLayer
         for layer in self:
-            glyphSet = writer.getGlyphSet(layer.name)
+            default = layer == defaultLayer
+            glyphSet = writer.getGlyphSet(layer.name, default=default)
             layer.save(glyphSet, saveAs=saveAs)
             # do this need a separate call?
             glyphSet.writeLayerInfo(layer)

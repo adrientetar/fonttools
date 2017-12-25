@@ -1,7 +1,8 @@
 import attr
 from fontTools.ufoLib.constants import (
-    DATA_DIRNAME, FEATURES_FILENAME, FONTINFO_FILENAME, GROUPS_FILENAME,
-    KERNING_FILENAME, IMAGES_DIRNAME, LAYERCONTENTS_FILENAME, LIB_FILENAME)
+    DATA_DIRNAME, DEFAULT_GLYPHS_DIRNAME, FEATURES_FILENAME, FONTINFO_FILENAME,
+    GROUPS_FILENAME, KERNING_FILENAME, IMAGES_DIRNAME, LAYERCONTENTS_FILENAME,
+    LIB_FILENAME, METAINFO_FILENAME)
 from fontTools.ufoLib.glyphSet import GlyphSet
 import os
 import plistlib
@@ -13,34 +14,47 @@ from ufoLib.filenames import userNameToFileName  # XXX fonttools
 class UFOWriter(object):
     # TODO: we should probably take path-like objects, for zip etc. support.
     _path = attr.ib(type=str)
+    _layerContents = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=list)
 
     def __attrs_post_init__(self):
         try:
             os.mkdir(self._path)
         except FileExistsError:
             pass
+        self._writeMetaInfo()
 
     @property
     def path(self):
         return self._path
 
+    def _writeMetaInfo(self):
+        data = {
+            "creator": "io.github.fontTools.ufoLib",
+            "formatVersion": 3,
+        }
+        path = os.path.join(self._path, METAINFO_FILENAME)
+        with open(path, "wb") as file:
+            plistlib.dump(data, file)
+
     # layers
 
     def deleteGlyphSet(self, layerName):
-        dir_ = self._contents[layerName]
-        path = os.path.join(self._path, dir_)
+        dirName = self._layerContents[layerName]
+        path = os.path.join(self._path, dirName)
         shutil.rmtree(path)
-        del self._contents[layerName]
+        del self._layerContents[layerName]
 
-    def getGlyphSet(self, layerName):
-        if layerName in self._contents:
-            dir_ = self._contents[layerName]
+    def getGlyphSet(self, layerName, default=False):
+        if layerName in self._layerContents:
+            dirName = self._layerContents[layerName]
+        elif default:
+            dirName = DEFAULT_GLYPHS_DIRNAME
         else:
             # TODO: cache this
-            existing = set(d.lower() for d in self._contents.values())
-            dir_ = self._contents[layerName] = userNameToFileName(
+            existing = set(d.lower() for d in self._layerContents.values())
+            dirName = self._layerContents[layerName] = userNameToFileName(
                 layerName, existing=existing, prefix="glyphs.")
-        path = os.path.join(self._path, dir_)
+        path = os.path.join(self._path, dirName)
         try:
             os.mkdir(path)
         except FileExistsError:
@@ -51,7 +65,14 @@ class UFOWriter(object):
         """
         This must be called after all glyph sets have been written.
         """
-        data = [(name, self._contents[name]) for name in layerOrder]
+        data = []
+        for name in layerOrder:
+            if data:
+                dirName = self._layerContents[name]
+            else:
+                dirName = DEFAULT_GLYPHS_DIRNAME
+            data.append((name, dirName))
+        assert data
         path = os.path.join(self._path, LAYERCONTENTS_FILENAME)
         with open(path, "wb") as file:
             plistlib.dump(data, file)
