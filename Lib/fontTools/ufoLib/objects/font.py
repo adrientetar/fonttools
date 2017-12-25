@@ -1,5 +1,6 @@
 import attr
 from ._common import OptString
+from fontTools.ufoLib.constants import DEFAULT_LAYER_NAME
 from fontTools.ufoLib.objects.dataSet import DataSet
 from fontTools.ufoLib.objects.guideline import Guideline
 from fontTools.ufoLib.objects.imageSet import ImageSet
@@ -7,8 +8,7 @@ from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layerSet import LayerSet
 from fontTools.ufoLib.reader import UFOReader
 from fontTools.ufoLib.writer import UFOWriter
-
-DEFAULT_LAYER_NAME = "public.default"
+import os
 
 
 @attr.s(slots=True)
@@ -102,12 +102,7 @@ class Font(object):
             if self._path is not None:
                 reader = UFOReader(self._path)
                 data = reader.readInfo()
-                # TODO: the guidelines should probably be made in the
-                # reader for validation etc.
-                # split into readInfo() and readGuidelines()
-                #
-                # idea: readGuidelines(self) which calls
-                # appendGuideline() with a dict
+                # split guidelines from the retrieved font info
                 guidelines = data.pop("guidelines", [])
                 self._info = Info(**data)
                 for i in range(len(guidelines)):
@@ -167,22 +162,38 @@ class Font(object):
 
     def save(self, path=None):
         saveAs = path is not None
-        # XXX: if saveAs, require that path does not exists
-        # so we don't deal with
-        if not saveAs:
+        if saveAs:
+            if os.path.exists(path):
+                raise FileExistsError("path %s already exists" % repr(path))
+        else:
             path = self._path
-        # assert default layer is present? --> in the writer, we do it in the reader
-        # forbid deleting default/or all layers in layerSet?
-        # if self.layers.defaultLayer.name != "public.default":
-        #     assert "public.default" not in self.layers.layerOrder
+        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
+            assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
+
         writer = UFOWriter(path)
         # save font attrs
         if self._features is not None or saveAs:
             writer.writeFeatures(self.features)
         if self._groups is not None or saveAs:
             writer.writeGroups(self.groups)
-        # guidelines?
         if self._info is not None or saveAs:
+            info = attr.asdict(self.info)
+            guidelines = []
+            for guideline in self.guidelines:
+                data = {
+                    "x": guideline.x,
+                    "y": guideline.y,
+                    "angle": guideline.angle,
+                }
+                if guideline.name is not None:
+                    data["name"] = guideline.name
+                if guideline.color is not None:
+                    data["color"] = guideline.color
+                if guideline.identifier is not None:
+                    data["identifier"] = guideline.identifier
+                guidelines.append(data)
+            if guidelines:
+                info["guidelines"] = guidelines
             writer.writeInfo(self.info)
         if self._kerning is not None or saveAs:
             writer.writeKerning(self.kerning)

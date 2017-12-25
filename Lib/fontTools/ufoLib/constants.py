@@ -13,3 +13,5 @@ LIB_FILENAME = "lib.plist"
 
 CONTENTS_FILENAME = "contents.plist"
 LAYERINFO_FILENAME = "layerinfo.plist"
+
+DEFAULT_LAYER_NAME = "public.default"

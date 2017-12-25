@@ -1,9 +1,12 @@
 import attr
 from fontTools.ufoLib.constants import (
     DATA_DIRNAME, FEATURES_FILENAME, FONTINFO_FILENAME, GROUPS_FILENAME,
-    KERNING_FILENAME, IMAGES_DIRNAME, LIB_FILENAME)
+    KERNING_FILENAME, IMAGES_DIRNAME, LAYERCONTENTS_FILENAME, LIB_FILENAME)
+from fontTools.ufoLib.glyphSet import GlyphSet
 import os
 import plistlib
+import shutil
+from ufoLib.filenames import userNameToFileName  # XXX fonttools
 
 
 @attr.s(slots=True)
@@ -24,13 +27,34 @@ class UFOWriter(object):
     # layers
 
     def deleteGlyphSet(self, layerName):
-        raise NotImplementedError  # XXX
+        dir_ = self._contents[layerName]
+        path = os.path.join(self._path, dir_)
+        shutil.rmtree(path)
+        del self._contents[layerName]
 
     def getGlyphSet(self, layerName):
-        raise NotImplementedError
+        if layerName in self._contents:
+            dir_ = self._contents[layerName]
+        else:
+            # TODO: cache this
+            existing = set(d.lower() for d in self._contents.values())
+            dir_ = self._contents[layerName] = userNameToFileName(
+                layerName, existing=existing, prefix="glyphs.")
+        path = os.path.join(self._path, dir_)
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            pass
+        return GlyphSet(path)
 
     def writeLayerContents(self, layerOrder):
-        raise NotImplementedError
+        """
+        This must be called after all glyph sets have been written.
+        """
+        data = [(name, self._contents[name]) for name in layerOrder]
+        path = os.path.join(self._path, LAYERCONTENTS_FILENAME)
+        with open(path, "wb") as file:
+            plistlib.dump(data, file)
 
     # bin
 

@@ -23,7 +23,7 @@ class DataStore(object):
     def __getitem__(self, fileName):
         if fileName not in self._data:
             if fileName not in self._fileNames:
-                raise KeyError("%s not in store" % fileName)
+                raise KeyError("%s is not in data store" % repr(fileName))
             reader = UFOReader(self._path)
             self._data[fileName] = self.readf(reader, fileName)
         return self._data[fileName]
