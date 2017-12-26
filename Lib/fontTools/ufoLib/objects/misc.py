@@ -55,7 +55,7 @@ class DataStore(object):
         self._scheduledForDeletion = set()
 
 
-@attr.s(slots=True)
+@attr.s(repr=False, slots=True)
 class Transformation(object):
     xScale = attr.ib(default=1, type=Number)
     xyScale = attr.ib(default=0, type=Number)
@@ -81,7 +81,5 @@ class Transformation(object):
         yield self.xOffset
         yield self.yOffset
 
-    # translate?
-    def move(self, dx, dy):
-        self.xOffset += dx
-        self.yOffset += dy
+    def __repr__(self):
+        return "<%d %d %d %d %d %d>" % tuple(self)

@@ -44,7 +44,8 @@ class Contour(object):
     def reverse(self):
         self._points.reverse()
 
-    # TODO: rotate method?
+    def rotate(self, index):
+        self._points[:] = self._points[index:] + self._points[:index]
 
     # -----------
     # Pen methods

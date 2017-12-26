@@ -37,7 +37,7 @@ class UFOReader(object):
                 self._getDirectoryListing(
                     f, files, depth=depth+1, maxDepth=maxDepth)
             else:
-                relPath = os.path.relPath(f, self._path)
+                relPath = os.path.relpath(f, self._path)
                 files.add(relPath)
 
     def getImageDirectoryListing(self):
