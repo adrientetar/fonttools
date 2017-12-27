@@ -6,8 +6,8 @@ import warnings
 
 @attr.s(slots=True)
 class Contour(object):
+    _points = attr.ib(default=attr.Factory(list), type=list)
     identifier = attr.ib(default=None, repr=False, type=OptString)
-    _points = attr.ib(default=attr.Factory(list), init=False, type=list)
 
     # TODO: use collections.abc?
 
@@ -44,8 +44,7 @@ class Contour(object):
     def reverse(self):
         self._points.reverse()
 
-    def rotate(self, index):
-        self._points[:] = self._points[index:] + self._points[:index]
+    # TODO: rotate method?
 
     # -----------
     # Pen methods

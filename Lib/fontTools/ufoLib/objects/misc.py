@@ -82,4 +82,4 @@ class Transformation(object):
         yield self.yOffset
 
     def __repr__(self):
-        return "<%d %d %d %d %d %d>" % tuple(self)
+        return "<%r %r %r %r %r %r>" % tuple(self)
