@@ -165,7 +165,7 @@ class Font(object):
         saveAs = path is not None
         if saveAs:
             if os.path.exists(path):
-                raise FileExistsError("path %s already exists" % repr(path))
+                raise FileExistsError("path %r already exists" % path)
         else:
             path = self._path
         if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:

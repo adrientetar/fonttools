@@ -29,7 +29,7 @@ class Info(object):
     openTypeGaspRangeRecords = attr.ib(default=None, type=list)
     openTypeHeadCreated = attr.ib(default=None, type=OptString)
     # type is positive integer
-    openTypeHeadLowerRecPPEM = attr.ib(default=None, type=int)
+    openTypeHeadLowestRecPPEM = attr.ib(default=None, type=int)
     openTypeHeadFlags = attr.ib(default=None, type=list)
 
     openTypeHheaAscender = attr.ib(default=None, type=int)

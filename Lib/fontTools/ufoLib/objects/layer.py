@@ -28,7 +28,7 @@ class Layer(object):
 
     def __delitem__(self, name):
         if name not in self._keys:
-            raise KeyError("name %s is not in layer" % repr(name))
+            raise KeyError("name %r is not in layer" % name)
         self._delete(name)
 
     def __getitem__(self, name):
@@ -68,7 +68,7 @@ class Layer(object):
 
     def addGlyph(self, glyph):
         if glyph.name in self._keys:
-            raise KeyError("glyph %s already exists" % repr(glyph.name))
+            raise KeyError("glyph %r already exists" % glyph.name)
         self._glyphs[glyph.name] = glyph
         self._keys.add(glyph.name)
         if glyph.name in self._scheduledForDeletion:
@@ -76,13 +76,13 @@ class Layer(object):
 
     def loadGlyph(self, name):
         if self._glyphSet is None or name not in self._glyphSet or name in self._scheduledForDeletion:
-            raise KeyError("name %s not in layer" % repr(name))
+            raise KeyError("name %r not in layer" % name)
         glyph = self._glyphSet.readGlyph(name, GlyphClasses)
         self._glyphs[name] = glyph
 
     def newGlyph(self, name):
         if name in self._keys:
-            raise KeyError("glyph %s already exists" % repr(name))
+            raise KeyError("glyph %r already exists" % name)
         self._glyphs[name] = glyph = Glyph(name)
         self._keys.add(name)
         if name in self._scheduledForDeletion:
@@ -93,7 +93,7 @@ class Layer(object):
         if name == newName:
             return
         if not overwrite and newName in self._keys:
-            raise KeyError("target glyph %s already exists" % repr(newName))
+            raise KeyError("target glyph %r already exists" % newName)
         # load-get and delete
         glyph = self[name]
         self._delete(name)

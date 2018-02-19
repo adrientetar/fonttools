@@ -6,10 +6,12 @@ from fontTools.ufoLib.objects.point import Point
 from fontTools.ufoLib.pointPens.basePen import AbstractPointPen
 
 
-@attr.s(slots=True)
 class GlyphPointPen(AbstractPointPen):
-    _glyph = attr.ib()
-    _contour = attr.ib(default=None, init=False)
+    __slots__ = "_glyph", "_contour"
+
+    def __init__(self, glyph):
+        self._glyph = glyph
+        self._contour = None
 
     def beginPath(self, identifier=None, **kwargs):
         self._contour = Contour(identifier=identifier)

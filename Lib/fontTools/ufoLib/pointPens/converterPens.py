@@ -4,8 +4,6 @@ import math
 
 __all__ = ["BasePointToSegmentPen", "PointToSegmentPen", "SegmentToPointPen"]
 
-# TODO: use attrs?
-
 
 class BasePointToSegmentPen(AbstractPointPen):
     """
@@ -15,6 +13,7 @@ class BasePointToSegmentPen(AbstractPointPen):
     as points, do use this base implementation as it properly takes
     care of all the edge cases.
     """
+    __slots__ = "currentPath",
 
     def __init__(self):
         self.currentPath = None
@@ -101,6 +100,7 @@ class PointToSegmentPen(BasePointToSegmentPen):
     Adapter class that converts the PointPen protocol to the
     (Segment)Pen protocol.
     """
+    __slots__ = "pen", "outputImpliedClosingLine"
 
     def __init__(self, segmentPen, outputImpliedClosingLine=False):
         BasePointToSegmentPen.__init__(self)
@@ -160,6 +160,7 @@ class SegmentToPointPen(AbstractPen):
     Adapter class that converts the (Segment)Pen protocol to the
     PointPen protocol.
     """
+    __slots__ = "pen", "contour"
 
     def __init__(self, pointPen, guessSmooth=True):
         if guessSmooth:
@@ -222,6 +223,7 @@ class GuessSmoothPointPen(AbstractPointPen):
     Filtering PointPen that tries to determine whether an on-curve point
     should be "smooth", ie. that it's a "tangent" point or a "curve" point.
     """
+    __slots__ = "_outPen", "_points"
 
     def __init__(self, outPen):
         self._outPen = outPen

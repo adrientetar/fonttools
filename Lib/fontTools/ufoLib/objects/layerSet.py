@@ -16,7 +16,7 @@ class LayerSet(object):
 
     def __delitem__(self, name):
         if name == self.defaultLayer.name:
-            raise KeyError("cannot delete default layer %s" % repr(name))
+            raise KeyError("cannot delete default layer %r" % name)
         del self._layers[name]
         self._scheduledForDeletion.add(name)
 
@@ -54,7 +54,7 @@ class LayerSet(object):
                 continue
             layers[layer_.name] = layer_
         if not hasLayer:
-            raise KeyError("layer %s is not in layer set" % repr(layer))
+            raise KeyError("layer %r is not in layer set" % layer)
         self._layers = layers
 
     @property
@@ -71,7 +71,7 @@ class LayerSet(object):
 
     def newLayer(self, name, glyphSet=None):
         if name in self._layers:
-            raise KeyError("layer %s already exists" % repr(name))
+            raise KeyError("layer %r already exists" % name)
         self._layers[name] = layer = Layer(name, glyphSet)
         # TODO: should this be done in Layer ctor?
         if glyphSet is not None:
@@ -86,7 +86,7 @@ class LayerSet(object):
             return
         # make sure we're copying something
         if not any(name in layer for layer in self):
-            raise KeyError("name %s is not in layer set" % repr(name))
+            raise KeyError("name %r is not in layer set" % name)
         # prepare destination, delete if overwrite=True or error
         for layer in self:
             if newName in self._layers:
@@ -94,7 +94,7 @@ class LayerSet(object):
                     del layer[newName]
                 else:
                     raise KeyError(
-                        "target name %s already exists" % repr(newName))
+                        "target name %r already exists" % newName)
         # now do the move
         for layer in self:
             if name in layer:
@@ -105,7 +105,7 @@ class LayerSet(object):
         if name == newName:
             return
         if not overwrite and newName in self._layers:
-            raise KeyError("target name %s already exists" % repr(newName))
+            raise KeyError("target name %r already exists" % newName)
         self._layers[newName] = layer = self._layers.pop(name)
         self._scheduledForDeletion.add(name)
         if newName in self._scheduledForDeletion:

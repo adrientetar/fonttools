@@ -68,7 +68,7 @@ class GlyphSet(object):
 
     def writeGlyph(self, glyph):
         if not glyph.name:
-            raise KeyError("name %s is not a string" % repr(glyph.name))
+            raise KeyError("name %r is not a string" % glyph.name)
         fileName = self._contents.get(glyph.name)
         if fileName is None:
             # TODO: we could cache this to avoid recreating it for every glyph

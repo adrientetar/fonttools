@@ -9,4 +9,3 @@ from fontTools.ufoLib.objects.info import Info
 from fontTools.ufoLib.objects.layer import Layer
 from fontTools.ufoLib.objects.layerSet import LayerSet
 from fontTools.ufoLib.objects.point import Point
-# ...

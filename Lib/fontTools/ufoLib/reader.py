@@ -26,7 +26,7 @@ class UFOReader(object):
 
     def _getDirectoryListing(self, path, files, depth=0, maxDepth=24):
         if depth > maxDepth:
-            raise RuntimeError("maximum recursion depth %s exceeded" % repr(maxDepth))
+            raise RuntimeError("maximum recursion depth %r exceeded" % maxDepth)
         try:
             listdir = os.listdir(path)
         except FileNotFoundError:

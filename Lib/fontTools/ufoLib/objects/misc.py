@@ -23,7 +23,7 @@ class DataStore(object):
     def __getitem__(self, fileName):
         if fileName not in self._data:
             if fileName not in self._fileNames:
-                raise KeyError("%s is not in data store" % repr(fileName))
+                raise KeyError("%r is not in data store" % fileName)
             reader = UFOReader(self._path)
             self._data[fileName] = self.readf(reader, fileName)
         return self._data[fileName]
@@ -63,15 +63,6 @@ class Transformation(object):
     yScale = attr.ib(default=1, type=Number)
     xOffset = attr.ib(default=0, type=Number)
     yOffset = attr.ib(default=0, type=Number)
-
-    # getitem, len?
-    # algebra ops?
-    # translate, shear, skew, etc.?
-    #
-    # iter lets us create a tuple
-    #
-    # Qt QTransform methods should be a good reference
-    # e.g. inverted() makes a copy, like reversed() for py iterators
 
     def __iter__(self):
         yield self.xScale

@@ -7,7 +7,7 @@ from fontTools.ufoLib.glyphSet import GlyphSet
 import os
 import plistlib
 import shutil
-from ufoLib.filenames import userNameToFileName  # XXX fonttools
+from ufoLib.filenames import userNameToFileName  # XXX: fonttools
 
 
 @attr.s(slots=True)

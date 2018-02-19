@@ -4,6 +4,7 @@ class AbstractPointPen(object):
     """
     Baseclass for all PointPens.
     """
+    __slots__ = ()
 
     def beginPath(self, identifier=None, **kwargs):
         """Start a new sub path."""
