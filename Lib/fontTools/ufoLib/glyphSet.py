@@ -274,8 +274,9 @@ def treeFromGlyph(glyph):
     treeFromOutline(glyph, etree.SubElement(root, "outline"))
     # lib
     if glyph.lib:
-        root.append(
-            etree.fromstring(plistlib.dumps(glyph.lib)))
+        lib = etree.SubElement(root, "lib")
+        plist = etree.fromstring(plistlib.dumps(glyph.lib))
+        lib.append(plist[0])
     return root
 
 
