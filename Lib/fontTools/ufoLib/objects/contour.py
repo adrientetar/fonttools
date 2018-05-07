@@ -1,13 +1,13 @@
 import attr
-from ._common import OptString
 from fontTools.ufoLib.pointPens.converterPens import PointToSegmentPen
+from typing import Optional
 import warnings
 
 
 @attr.s(slots=True)
 class Contour(object):
     _points = attr.ib(default=attr.Factory(list), type=list)
-    identifier = attr.ib(default=None, repr=False, type=OptString)
+    identifier = attr.ib(default=None, repr=False, type=Optional[str])
 
     # TODO: use collections.abc?
 

@@ -1,13 +1,10 @@
 import attr
-from ._common import OptString
 from fontTools.ufoLib.objects.misc import Transformation
+from typing import Optional
 
 
 @attr.s(slots=True)
 class Image(object):
-    fileName = attr.ib(type=OptString)
+    fileName = attr.ib(type=Optional[str])
     transformation = attr.ib(type=Transformation)
-    color = attr.ib(default=None, type=OptString)
-
-
-OptImage = (Image, None)
+    color = attr.ib(default=None, type=Optional[str])

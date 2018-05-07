@@ -1,6 +1,7 @@
 import attr
 from fontTools.ufoLib.objects.misc import Transformation
 from fontTools.ufoLib.pointPens.converterPens import PointToSegmentPen
+from typing import Optional
 import warnings
 
 
@@ -8,7 +9,7 @@ import warnings
 class Component(object):
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(type=Transformation)
-    identifier = attr.ib(default=None, type=str)
+    identifier = attr.ib(default=None, type=Optional[str])
 
     # -----------
     # Pen methods

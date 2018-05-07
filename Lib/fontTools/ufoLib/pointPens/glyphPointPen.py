@@ -1,4 +1,3 @@
-import attr
 from fontTools.ufoLib.objects.component import Component
 from fontTools.ufoLib.objects.contour import Contour
 from fontTools.ufoLib.objects.misc import Transformation

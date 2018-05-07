@@ -1,11 +1,11 @@
 import attr
-from ._common import Number, OptString
+from typing import Optional, Union
 
 
 @attr.s(slots=True)
 class Anchor(object):
-    x = attr.ib(type=Number)
-    y = attr.ib(type=Number)
-    name = attr.ib(default=None, type=OptString)
-    color = attr.ib(default=None, type=OptString)
-    identifier = attr.ib(default=None, type=OptString)
+    x = attr.ib(type=Union[int, float])
+    y = attr.ib(type=Union[int, float])
+    name = attr.ib(default=None, type=Optional[str])
+    color = attr.ib(default=None, type=Optional[str])
+    identifier = attr.ib(default=None, type=Optional[str])

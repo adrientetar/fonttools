@@ -1,4 +1,5 @@
 import attr
+from fontTools.misc.filenames import userNameToFileName
 from fontTools.ufoLib.constants import (
     DATA_DIRNAME, DEFAULT_GLYPHS_DIRNAME, FEATURES_FILENAME, FONTINFO_FILENAME,
     GROUPS_FILENAME, KERNING_FILENAME, IMAGES_DIRNAME, LAYERCONTENTS_FILENAME,
@@ -7,7 +8,6 @@ from fontTools.ufoLib.glyphSet import GlyphSet
 import os
 import plistlib
 import shutil
-from ufoLib.filenames import userNameToFileName  # XXX: fonttools
 
 
 @attr.s(slots=True)

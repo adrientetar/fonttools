@@ -1,5 +1,4 @@
 import attr
-from ._common import OptString
 from fontTools.ufoLib.constants import DEFAULT_LAYER_NAME
 from fontTools.ufoLib.objects.dataSet import DataSet
 from fontTools.ufoLib.objects.guideline import Guideline
@@ -9,13 +8,14 @@ from fontTools.ufoLib.objects.layerSet import LayerSet
 from fontTools.ufoLib.reader import UFOReader
 from fontTools.ufoLib.writer import UFOWriter
 import os
+from typing import Optional
 
 
 @attr.s(slots=True)
 class Font(object):
-    _path = attr.ib(default=None, type=OptString)
+    _path = attr.ib(default=None, type=Optional[str])
 
-    _features = attr.ib(default=None, init=False, repr=False, type=OptString)
+    _features = attr.ib(default=None, init=False, repr=False, type=Optional[str])
     _groups = attr.ib(default=None, init=False, repr=False, type=dict)
     _guidelines = attr.ib(default=None, init=False, repr=False, type=list)
     _info = attr.ib(default=None, init=False, repr=False, type=Info)

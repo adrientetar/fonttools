@@ -1,10 +1,10 @@
 import attr
+from fontTools.misc.filenames import userNameToFileName
 from fontTools.ufoLib.constants import (
     CONTENTS_FILENAME, LAYERINFO_FILENAME)
 from lxml import etree
 import os
 import plistlib
-from ufoLib.filenames import userNameToFileName  # XXX fonttools
 
 # Note: we can implement reporting with logging, and lxml Elements
 # have a sourceline attr

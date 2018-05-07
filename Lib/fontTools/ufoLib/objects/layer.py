@@ -1,7 +1,7 @@
 import attr
-from ._common import OptString
 from fontTools.ufoLib.objects.glyph import Glyph, GlyphClasses
 from fontTools.ufoLib.reader import GlyphSet
+from typing import Optional
 
 
 @attr.s(slots=True)
@@ -12,7 +12,7 @@ class Layer(object):
     _keys = attr.ib(init=False, repr=False, type=set)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False, type=set)
 
-    color = attr.ib(default=None, init=False, repr=False, type=OptString)
+    color = attr.ib(default=None, init=False, repr=False, type=Optional[str])
     lib = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=dict)
 
     def __attrs_post_init__(self):

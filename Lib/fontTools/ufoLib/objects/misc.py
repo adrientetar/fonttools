@@ -1,6 +1,6 @@
 import attr
-from ._common import Number
 from fontTools.ufoLib.reader import UFOReader
+from typing import Union
 
 
 @attr.s(slots=True)
@@ -57,12 +57,12 @@ class DataStore(object):
 
 @attr.s(repr=False, slots=True)
 class Transformation(object):
-    xScale = attr.ib(default=1, type=Number)
-    xyScale = attr.ib(default=0, type=Number)
-    yxScale = attr.ib(default=0, type=Number)
-    yScale = attr.ib(default=1, type=Number)
-    xOffset = attr.ib(default=0, type=Number)
-    yOffset = attr.ib(default=0, type=Number)
+    xScale = attr.ib(default=1, type=Union[int, float])
+    xyScale = attr.ib(default=0, type=Union[int, float])
+    yxScale = attr.ib(default=0, type=Union[int, float])
+    yScale = attr.ib(default=1, type=Union[int, float])
+    xOffset = attr.ib(default=0, type=Union[int, float])
+    yOffset = attr.ib(default=0, type=Union[int, float])
 
     def __iter__(self):
         yield self.xScale

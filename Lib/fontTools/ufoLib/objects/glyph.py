@@ -1,26 +1,26 @@
 import attr
-from ._common import Number, OptString
 from fontTools.ufoLib.objects.anchor import Anchor
 from fontTools.ufoLib.objects.component import Component
 from fontTools.ufoLib.objects.contour import Contour
 from fontTools.ufoLib.objects.guideline import Guideline
-from fontTools.ufoLib.objects.image import Image, OptImage
+from fontTools.ufoLib.objects.image import Image
 from fontTools.ufoLib.objects.misc import Transformation
 from fontTools.ufoLib.objects.point import Point
 from fontTools.ufoLib.pointPens.converterPens import PointToSegmentPen, SegmentToPointPen
 from fontTools.ufoLib.pointPens.glyphPointPen import GlyphPointPen
+from typing import Optional, Union
 
 
 @attr.s(slots=True)
 class Glyph(object):
     _name = attr.ib(type=str)
-    width = attr.ib(default=0, init=False, type=Number)
-    height = attr.ib(default=0, init=False, type=Number)
+    width = attr.ib(default=0, init=False, type=Union[int, float])
+    height = attr.ib(default=0, init=False, type=Union[int, float])
     unicodes = attr.ib(default=attr.Factory(list), init=False, type=list)
 
-    image = attr.ib(default=None, init=False, repr=False, type=OptImage)
+    image = attr.ib(default=None, init=False, repr=False, type=Optional[Image])
     lib = attr.ib(default=attr.Factory(dict), init=False, repr=False, type=dict)
-    note = attr.ib(default=None, init=False, repr=False, type=OptString)
+    note = attr.ib(default=None, init=False, repr=False, type=Optional[str])
 
     anchors = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
     components = attr.ib(default=attr.Factory(list), init=False, repr=False, type=list)
